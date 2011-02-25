@@ -8,8 +8,8 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 AM_PROG_CC_C_O
 
-opt_CFLAGS="-g -O3"
-dbg_CFLAGS="-g -O0"
+opt_CFLAGS="-Wall -g -O3"
+dbg_CFLAGS="-Wall -g -O0"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],

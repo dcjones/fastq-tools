@@ -118,7 +118,6 @@ int main(int argc, char* argv[])
             case 0:
                 if (long_options[opt_idx].flag != 0) break;
                 if (optarg) {
-                    /* TODO */
                 }
                 break;
 
@@ -129,6 +128,9 @@ int main(int argc, char* argv[])
             case 'v':
                 invert_flag = 1;
                 break;
+
+            case '?':
+                return 1;
 
             default:
                 abort();
