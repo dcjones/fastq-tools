@@ -33,7 +33,8 @@ then
     AC_MSG_ERROR([The PCRE library is needed. See http://www.pcre.org.])
 fi
 CFLAGS="$CFLAGS $(pcre-config --cflags)"
-PCRE_LIBS=$(pcre-config --libs)
+PCRE_LIBS="$(pcre-config --libs)"
+AC_SUBST(PCRE_LIBS)
 
 # check getopt
 AC_CHECK_HEADER(getopt.h, ,

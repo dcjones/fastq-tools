@@ -197,7 +197,7 @@ typedef struct __kstring_t {
 			seq->qual.m = seq->seq.m;									\
 			seq->qual.s = (char*)realloc(seq->qual.s, seq->qual.m);		\
 		}																\
-		while ((c = ks_getc(ks)) != -1 && c != '\n'); /* skip the rest of '+' line */ \
+        ks_getuntil(ks, '\n', &seq->comment, &c);                        \
 		if (c == -1) return -2; /* we should not stop here */			\
 		while ((c = ks_getc(ks)) != -1 && seq->qual.l < seq->seq.l)		\
 			if (c >= 33 && c <= 127) seq->qual.s[seq->qual.l++] = (unsigned char)c;	\
