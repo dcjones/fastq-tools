@@ -1,0 +1,100 @@
+Introduction
+
+The Smith-Waterman [1] algorithm is one of the most sensitive sequencing 
+algorithms in use today.  It is also the slowest due to the number of 
+calculations needed to perform the search.  To speed up the algorithm, it 
+has been adapted to use Single Instruction Multiple Data, SIMD, instructions 
+found on many common microprocessors today.  SIMD instructions are able to 
+perform the same operation on multiple pieces of data parallel.
+
+The program swsse2 introduces a new SIMD implementation of the Smith-Waterman 
+algorithm for the X86 processor.  The weights are precomputed parallel to the 
+query sequence, like the Rognes [2] implementation, but are accessed in the 
+striped pattern.  The new implementation reached speeds six times faster than 
+other SIMD implementations.
+
+Below is a graph comparing the total search times of 11 queries, 3806 residues,
+against the Swiss-Prot 49.1 database, 75,841,138 residues.  The tests were run
+on a PC with a 2.00GHz Intel Xeon Core 2 Duo processor with 2 GB RAM.  The 
+program is singlely threaded, so the number of cores has no affect on the run 
+times.  The Wozniak, Rognes and striped implementations were run with the 
+scoring matrices BLOSUM50 and BLOSUM62 and four different gap penalties, 10-k,
+10-2k, 14-2k and 40-2k.  Since the Wozniak's runtime does not change depending
+on the scoring matrix, one line is used for both scoring matrices.
+
+Build Instructions
+
+    * Download the zip file with the swsse2 sources.
+    * Unzip the sources.
+    * Load the swsse2.vcproj file into Microsoft Visual C++ 2005.
+    * Build the project (F7).  For optimized code, be sure to change the 
+      configuration to a Release build. 
+    * The swsse2.exe file is in the Release directory ready to be run.
+
+Running
+
+To run swsse2 three files must be provided, the scoring matrix, query sequence
+and the database sequence.  Four scoring matrices are provided with the 
+release, BLOSUM45, BLOSUM50, BLOSUM62 and BLOSUM80.  The query sequence and 
+database sequence must be in the FASTA format.  For example, to run with the 
+default gap penalties 10-2k, the scoring matrix BLOSUM50, the query sequence 
+ptest1.fasta and the sequence database db.fasta use:
+
+     c:\swsse2>.\Release\swsse2.exe blosum50.mat ptest1.fasta db.fasta
+     ptest1.fasta vs db.fasta
+     Matrix: blosum50.mat, Init: -10, Ext: -2
+
+     Score  Description
+        53  108_LYCES Protein 108 precursor.
+        53  10KD_VIGUN 10 kDa protein precursor (Clone PSAS10).
+        32  1431_ECHGR 14-3-3 protein homolog 1.
+        32  1431_ECHMU 14-3-3 protein homolog 1 (Emma14-3-3.1).
+        27  110K_PLAKN 110 kDa antigen (PK110) (Fragment).
+        26  1432_ECHGR 14-3-3 protein homolog 2.
+        25  13S1_FAGES 13S globulin seed storage protein 1
+        25  13S3_FAGES 13S globulin seed storage protein 3
+        25  13S2_FAGES 13S globulin seed storage protein 2
+        23  12S1_ARATH 12S seed storage protein CRA1
+        22  13SB_FAGES 13S globulin basic chain.
+        21  12AH_CLOS4 12-alpha-hydroxysteroid dehydrogenase
+        21  140U_DROME RPII140-upstream protein.
+        21  12S2_ARATH 12S seed storage protein CRB
+        21  1431_LYCES 14-3-3 protein 1.
+        20  1431_ARATH 14-3-3-like protein GF14
+
+     21 residues in query string
+     2014 residues in 25 library sequences
+     Scan time:  0.000 (Striped implementation)
+
+Options
+
+    Usage: swsse2 [-h] [-(n|w|r|s)] [-i num] [-e num] [-t num] [-c num] 
+                  matrix query db
+
+        -h       : this help message
+        -n       : run a non-vectorized Smith-Waterman search
+        -w       : run a vectorized Wozniak search
+        -r       : run a vectorized Rognes search (NOT SUPPORTED)
+        -s       : run a vectorized striped search (default)
+        -i num   : gap init penalty (default -10)
+        -e num   : gap extension penalty (default -2)
+        -t num   : minimum score threshold (default 20)
+        -c num   : number of scores to be displayed (default 250)
+        matrix   : scoring matrix file
+        query    : query sequence file (fasta format)
+        db       : sequence database file (fasta format) 
+
+Note
+
+The Rognes implementation is not released as part of the swsse2 package due to
+patent concerns. 
+
+References
+
+[1] Smith, T. F. and Waterman, M. S. (1981) Identification of common molecular subsequences. J. Mol. Biol., 147, 195-197.
+
+[2] Rognes, T. and Seeberg, E. (2000) Six-fold speed-up of the Smith-Waterman sequence database searches using parallel processing on common microprocessors.  Bioinformatics, 16, 699-706. 
+
+ 
+
+

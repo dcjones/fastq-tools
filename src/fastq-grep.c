@@ -36,12 +36,13 @@ void print_help()
 "Options:\n"
 "  -h, --help              print this message\n"
 "  -v, --invert-match      select nonmatching entries\n"
+"  -c, --count             output only the number of matching sequences\n"
     );
 }
 
 static int invert_flag;
 static int help_flag;
-static int zout_flag;
+static int count_flag;
 
 
 
@@ -59,6 +60,7 @@ void fastq_grep( gzFile fin, FILE* fout, pcre* re )
 {
     int rc;
     int ovector[3];
+    size_t count = 0;
 
     kseq_t* seq;
     seq = kseq_init(fin);
@@ -74,17 +76,23 @@ void fastq_grep( gzFile fin, FILE* fout, pcre* re )
                        3         ); /* output vector length */
 
         if ((invert_flag && rc == PCRE_ERROR_NOMATCH) || rc >= 0) {
-            print_fastq_entry( fout, seq );
+            if (count_flag) count++;
+            else            print_fastq_entry(fout, seq);
         }
     }
 
     kseq_destroy(seq);
+
+    if (count_flag) fprintf(fout, "%zu\n", count);
 }
 
 
 
 int main(int argc, char* argv[])
 {
+    SET_BINARY_MODE(stdin);
+    SET_BINARY_MODE(stdout);
+
     const char* pat;
     pcre* re;
     const char* pat_error;
@@ -94,9 +102,9 @@ int main(int argc, char* argv[])
     gzFile gzfin;
 
 
-    invert_flag = 0;
-    help_flag   = 0;
-    zout_flag   = 0;
+    invert_flag  = 0;
+    help_flag    = 0;
+    count_flag   = 0;
 
     int opt;
     int opt_idx;
@@ -106,11 +114,12 @@ int main(int argc, char* argv[])
         { 
           {"help", no_argument, &help_flag, 1},
           {"invert-match", no_argument, &invert_flag, 1},
+          {"count", no_argument, &count_flag, 1},
           {0, 0, 0, 0}
         };
 
     while (1) {
-        opt = getopt_long(argc, argv, "hv", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "hvc", long_options, &opt_idx);
 
         if( opt == -1 ) break;
 
@@ -127,6 +136,10 @@ int main(int argc, char* argv[])
 
             case 'v':
                 invert_flag = 1;
+                break;
+
+            case 'c':
+                count_flag = 1;
                 break;
 
             case '?':

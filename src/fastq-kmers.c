@@ -144,6 +144,9 @@ void print_kmer_freqs(FILE* fout, uint32_t* cs)
 
 int main(int argc, char* argv[])
 {
+    SET_BINARY_MODE(stdin);
+    SET_BINARY_MODE(stdout);
+
     help_flag = 0;
     k = 1;
 

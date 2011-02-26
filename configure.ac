@@ -22,6 +22,7 @@ AS_IF([test "x$enable_debug" = xyes],
 
 AC_DEFINE(_FILE_OFFSET_BITS, 64)
 
+AC_PROG_LIBTOOL
 
 # check zlib
 AX_CHECK_ZLIB
@@ -44,6 +45,7 @@ AC_CHECK_HEADER(getopt.h, ,
 CXXFLAGS=$CFLAGS
 
 AC_CONFIG_FILES( [Makefile
-                  src/Makefile] )
+                  src/Makefile
+                  src/swsse2/Makefile] )
 
 AC_OUTPUT
