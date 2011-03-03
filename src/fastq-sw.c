@@ -59,7 +59,7 @@ static inline int imax4(int a, int b, int c, int d)
 
 void fastq_sw_conv_seq(unsigned char* seq, int n)
 {
-    while (*seq || n--) {
+    while (*seq && n) {
         switch (*seq) {
             case 'A' :
             case 'a':
@@ -90,6 +90,7 @@ void fastq_sw_conv_seq(unsigned char* seq, int n)
         }
 
         seq++;
+        n--;
     }
 }
 
@@ -97,6 +98,8 @@ void fastq_sw_conv_seq(unsigned char* seq, int n)
 sw_t* fastq_alloc_sw(const unsigned char* subject, int size)
 {
     sw_t* sw = malloc_or_die(sizeof(sw_t));
+
+    sw->subject = malloc_or_die(size);
     memcpy(sw->subject, subject, size);
 
     /* default cost matrix */
@@ -126,8 +129,6 @@ void fastq_free_sw(sw_t* sw)
 
 int fastq_sw(sw_t* sw, const unsigned char* x, int n)
 {
-    /*const int max_score = 65535;*/
-
     /* conveniance */
     int*      maxstu = sw->work0;
     int*           t = sw->work1;
@@ -138,6 +139,8 @@ int fastq_sw(sw_t* sw, const unsigned char* x, int n)
     unsigned char* y = sw->subject;
 
     int i, j;
+
+    int score = 0;
 
     /* zero maxstu row */
     memset(maxstu, 0, m * sizeof(int));
@@ -152,10 +155,11 @@ int fastq_sw(sw_t* sw, const unsigned char* x, int n)
     for (i = 0; i < n; i++) {
 
         /* special case for column 0 */
-        t[j] = imax(maxstu[j] + gap_op, t[j] + gap_ex);
+        t[0] = imax(maxstu[0] + gap_op, t[0] + gap_ex);
         u    = gap_op;
-        maxstu[0] = imax4(0, d[5 * y[j] + x[j]], t[j], u);
+        maxstu[0] = imax4(0, d[5 * y[0] + x[0]], t[0], u);
         maxstu0 = 0;
+        score = imax(score, maxstu[0]);
 
 
         for (j = 1; j < m; j++) {
@@ -165,14 +169,11 @@ int fastq_sw(sw_t* sw, const unsigned char* x, int n)
             maxstu0 = maxstu[j];
 
             maxstu[j] = imax4(0, s, t[j], u);
+            score = imax(score, maxstu[j]);
         }
     }
 
-    /* return maximum from maxstu */
-    maxstu0 = 0;
-    for (j = 0; j <m; j++) maxstu0 = imax(maxstu0, maxstu[j]);
-
-    return maxstu0;
+    return score;
 }
 
 
