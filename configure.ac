@@ -45,7 +45,6 @@ AC_CHECK_HEADER(getopt.h, ,
 CXXFLAGS=$CFLAGS
 
 AC_CONFIG_FILES( [Makefile
-                  src/Makefile
-                  src/swsse2/Makefile] )
+                  src/Makefile] )
 
 AC_OUTPUT

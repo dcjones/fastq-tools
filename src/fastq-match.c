@@ -12,10 +12,7 @@
 
 #include "fastq-common.h"
 #include "fastq-parse.h"
-#include "swsse2/blosum62.h"
-#include "swsse2/swsse2.h"
-#include "swsse2/matrix.h"
-#include "swsse2/swstriped.h"
+#include "fastq-sw.h"
 #include <stdlib.h>
 #include <string.h>
 #include <zlib.h>
@@ -45,25 +42,13 @@ void print_help()
 }
 
 
-void convert_sequence(unsigned char* s, int n)
-{
-    int i;
-    for (i = 0; i < n; i++) {
-        s[i] = (char)AMINO_ACID_VALUE[(int)s[i]];
-    }
-}
 
 
 void fastq_match(FILE* fin, FILE* fout,
-                 SwStripedData* sw_data,
-                 unsigned char* query, int n,
-                 SEARCH_OPTIONS* options)
+                 sw_t* sw,
+                 unsigned char* query, int n)
 {
     int score;
-
-    int gap_init  = -(options->gapInit + options->gapExt);
-    int gap_ext   = -options->gapExt;
-    int threshold = options->threshold;
 
     fastq_t* fqf = fastq_open(fin);
     seq_t* seq = fastq_alloc_seq();
@@ -71,25 +56,8 @@ void fastq_match(FILE* fin, FILE* fout,
     while (fastq_next(fqf, seq)) {
         fprintf(fout, "%s\t", seq->seq.s);
 
-        convert_sequence((unsigned char*)seq->seq.s, seq->seq.n);
-
-        score = swStripedByte(query, n,
-                              (unsigned char*)seq->seq.s, seq->seq.n,
-                              gap_init, gap_ext,
-                              sw_data->pvbQueryProf,
-                              sw_data->pvH1,
-                              sw_data->pvH2,
-                              sw_data->pvE,
-                              sw_data->bias);
-        if (score >= 255) {
-            score = swStripedWord(query, n,
-                                  (unsigned char*)seq->seq.s, seq->seq.n,
-                                  gap_init, gap_ext,
-                                  sw_data->pvbQueryProf,
-                                  sw_data->pvH1,
-                                  sw_data->pvH2,
-                                  sw_data->pvE);
-        }
+        fastq_sw_conv_seq((unsigned char*)seq->seq.s, seq->seq.n);
+        score = fastq_sw(sw, (unsigned char*)seq->seq.s, seq->seq.n);
 
         fprintf(fout, "%d\n", score);
     }
@@ -107,13 +75,8 @@ int main(int argc, char* argv[])
 
     unsigned char* query;
     int query_len;
-    SwStripedData* sw_data;
-    signed char* mat = blosum62;
-    SEARCH_OPTIONS options;
 
-    options.gapInit   = -10;
-    options.gapExt    = -2;
-    options.threshold = -1;
+    sw_t* sw;
 
     FILE*  fin;
 
@@ -124,7 +87,9 @@ int main(int argc, char* argv[])
 
     static struct option long_options[] =
         { 
-          {"help", no_argument, &help_flag, 1},
+          {"help",       no_argument, &help_flag, 1},
+          {"gap-init",   required_argument, NULL, 0},
+          {"gap-extend", required_argument, NULL, 0},
           {0, 0, 0, 0}
         };
 
@@ -165,12 +130,12 @@ int main(int argc, char* argv[])
 
     query = (unsigned char*)argv[optind++];
     query_len = strlen((char*)query);
-    convert_sequence(query, query_len);
+    fastq_sw_conv_seq(query, query_len);
 
-    sw_data = swStripedInit(query, query_len, mat);
+    sw = fastq_alloc_sw(query, query_len);
 
     if (optind >= argc || (argc - optind == 1 && strcmp(argv[optind],"-") == 0)) {
-        fastq_match(stdin, stdout, sw_data, query, query_len, &options);
+        fastq_match(stdin, stdout, sw, query, query_len);
     }
     else {
         for (; optind < argc; optind++) {
@@ -180,11 +145,11 @@ int main(int argc, char* argv[])
                 continue;
             }
 
-            fastq_match(fin, stdout, sw_data, query, query_len, &options);
+            fastq_match(fin, stdout, sw, query, query_len);
         }
     }
 
-    swStripedComplete(sw_data);
+    fastq_free_sw(sw);
 
     return 0;
 }
