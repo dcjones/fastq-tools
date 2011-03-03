@@ -1,21 +1,22 @@
 
-
-/* 
- * fastq-grep: regular expression searches of the sequences within a fastq file
+/*
+ * This file is part of fastq-tools.
  *
- * Febuary 2011 / Daniel Jones <dcjones@cs.washington.edu> 
+ * Copyright (c) 2011 by Daniel C. Jones <dcjones@cs.washington.edu>
+ *
+ * fastq-grep :
+ * Regular expression searches of the sequences within a FASTQ file.
  *
  */
 
 
+#include "fastq-common.h"
+#include "fastq-parse.h"
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
 #include <zlib.h>
 #include <pcre.h>
-
-#include "kseq.h"
-KSEQ_INIT(gzFile, gzread)
 
 
 #if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
@@ -46,30 +47,30 @@ static int count_flag;
 
 
 
-void print_fastq_entry( FILE* fout, kseq_t* seq )
+void print_fastq_entry(FILE* fout, seq_t* seq)
 {
     fprintf(fout, "@%s\n%s\n+%s\n%s\n",
-                  seq->name.s,
+                  seq->id1.s,
                   seq->seq.s,
-                  seq->comment.s,
+                  seq->id2.s,
                   seq->qual.s );
 }
 
 
-void fastq_grep( gzFile fin, FILE* fout, pcre* re )
+void fastq_grep(FILE* fin, FILE* fout, pcre* re)
 {
     int rc;
     int ovector[3];
     size_t count = 0;
 
-    kseq_t* seq;
-    seq = kseq_init(fin);
+    fastq_t* fqf = fastq_open(fin);
+    seq_t* seq = fastq_alloc_seq();
 
-    while (kseq_read(seq) >= 0) {
+    while (fastq_next(fqf, seq)) {
         rc = pcre_exec(re,          /* pattern */
                        NULL,        /* extre data */
                        seq->seq.s,  /* subject */
-                       seq->seq.l,  /* subject length */
+                       seq->seq.n,  /* subject length */
                        0,           /* subject offset */
                        0,           /* options */
                        ovector,     /* output vector */
@@ -81,7 +82,8 @@ void fastq_grep( gzFile fin, FILE* fout, pcre* re )
         }
     }
 
-    kseq_destroy(seq);
+    fastq_free_seq(seq);
+    fastq_close(fqf);
 
     if (count_flag) fprintf(fout, "%zu\n", count);
 }
@@ -99,7 +101,6 @@ int main(int argc, char* argv[])
     int pat_error_offset;
 
     FILE*  fin;
-    gzFile gzfin;
 
 
     invert_flag  = 0;
@@ -172,15 +173,7 @@ int main(int argc, char* argv[])
 
 
     if (optind >= argc || (argc - optind == 1 && strcmp(argv[optind],"-") == 0)) {
-        gzfin = gzdopen( fileno(stdin), "rb" );
-        if (gzfin == NULL) {
-            fprintf(stderr, "Malformed file 'stdin'.\n");
-            return 1;
-        }
-
-        fastq_grep(gzfin, stdout, re);
-
-        gzclose(gzfin);
+        fastq_grep(stdin, stdout, re);
     }
     else {
         for (; optind < argc; optind++) {
@@ -190,15 +183,9 @@ int main(int argc, char* argv[])
                 continue;
             }
 
-            gzfin = gzdopen(fileno(fin), "rb");
-            if (gzfin == NULL) {
-                fprintf(stderr, "Malformed file '%s'.\n", argv[optind]);
-                continue;
-            }
+            fastq_grep(fin, stdout, re);
 
-            fastq_grep(gzfin, stdout, re);
-
-            gzclose(gzfin);
+            fclose(fin);
         }
     }
 

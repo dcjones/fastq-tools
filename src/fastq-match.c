@@ -1,20 +1,25 @@
 
-/* Smith-Waterman alignments against sequences within a fastq file.
+/*
+ * This file is part of fastq-tools.
  *
- * Daniel Jones <dcjones@cs.washington.edu>
+ * Copyright (c) 2011 by Daniel C. Jones <dcjones@cs.washington.edu>
+ *
+ * fastq-match :
+ * Smith-Waterman alignments against sequences within a fastq file.
+ *
  */
 
-#include <stdlib.h>
-#include <zlib.h>
-#include <getopt.h>
 
+#include "fastq-common.h"
+#include "fastq-parse.h"
 #include "swsse2/blosum62.h"
 #include "swsse2/swsse2.h"
 #include "swsse2/matrix.h"
 #include "swsse2/swstriped.h"
-#include "kseq.h"
-KSEQ_INIT(gzFile, gzread)
-
+#include <stdlib.h>
+#include <string.h>
+#include <zlib.h>
+#include <getopt.h>
 
 #if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
@@ -49,7 +54,7 @@ void convert_sequence(unsigned char* s, int n)
 }
 
 
-void fastq_match(gzFile fin, FILE* fout,
+void fastq_match(FILE* fin, FILE* fout,
                  SwStripedData* sw_data,
                  unsigned char* query, int n,
                  SEARCH_OPTIONS* options)
@@ -60,16 +65,16 @@ void fastq_match(gzFile fin, FILE* fout,
     int gap_ext   = -options->gapExt;
     int threshold = options->threshold;
 
-    kseq_t* seq;
-    seq = kseq_init(fin);
+    fastq_t* fqf = fastq_open(fin);
+    seq_t* seq = fastq_alloc_seq();
 
-    while (kseq_read(seq) >= 0) {
+    while (fastq_next(fqf, seq)) {
         fprintf(fout, "%s\t", seq->seq.s);
 
-        convert_sequence((unsigned char*)seq->seq.s, seq->seq.l);
+        convert_sequence((unsigned char*)seq->seq.s, seq->seq.n);
 
         score = swStripedByte(query, n,
-                              (unsigned char*)seq->seq.s, seq->seq.l,
+                              (unsigned char*)seq->seq.s, seq->seq.n,
                               gap_init, gap_ext,
                               sw_data->pvbQueryProf,
                               sw_data->pvH1,
@@ -78,7 +83,7 @@ void fastq_match(gzFile fin, FILE* fout,
                               sw_data->bias);
         if (score >= 255) {
             score = swStripedWord(query, n,
-                                  (unsigned char*)seq->seq.s, seq->seq.l,
+                                  (unsigned char*)seq->seq.s, seq->seq.n,
                                   gap_init, gap_ext,
                                   sw_data->pvbQueryProf,
                                   sw_data->pvH1,
@@ -89,7 +94,8 @@ void fastq_match(gzFile fin, FILE* fout,
         fprintf(fout, "%d\n", score);
     }
 
-    kseq_destroy(seq);
+    fastq_free_seq(seq);
+    fastq_close(fqf);
 }
 
 
@@ -110,7 +116,6 @@ int main(int argc, char* argv[])
     options.threshold = -1;
 
     FILE*  fin;
-    gzFile gzfin;
 
     help_flag = 0;
 
@@ -165,15 +170,7 @@ int main(int argc, char* argv[])
     sw_data = swStripedInit(query, query_len, mat);
 
     if (optind >= argc || (argc - optind == 1 && strcmp(argv[optind],"-") == 0)) {
-        gzfin = gzdopen( fileno(stdin), "rb" );
-        if (gzfin == NULL) {
-            fprintf(stderr, "Malformed file 'stdin'.\n");
-            return 1;
-        }
-
-        fastq_match(gzfin, stdout, sw_data, query, query_len, &options);
-
-        gzclose(gzfin);
+        fastq_match(stdin, stdout, sw_data, query, query_len, &options);
     }
     else {
         for (; optind < argc; optind++) {
@@ -183,15 +180,7 @@ int main(int argc, char* argv[])
                 continue;
             }
 
-            gzfin = gzdopen(fileno(fin), "rb");
-            if (gzfin == NULL) {
-                fprintf(stderr, "Malformed file '%s'.\n", argv[optind]);
-                continue;
-            }
-
-            fastq_match(gzfin, stdout, sw_data, query, query_len, &options);
-
-            gzclose(gzfin);
+            fastq_match(fin, stdout, sw_data, query, query_len, &options);
         }
     }
 

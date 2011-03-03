@@ -1,21 +1,22 @@
 
-/* 
- * fastq-kmers: kmer frequences within fastq files
+/*
+ * This file is part of fastq-tools.
  *
- * Febuary 2011 / Daniel Jones <dcjones@cs.washington.edu> 
+ * Copyright (c) 2011 by Daniel C. Jones <dcjones@cs.washington.edu>
+ *
+ * fastq-kmers :
+ * Tabulate k-mer frequencies with FASTQ files.
  *
  */
 
-
-
+#include "fastq-common.h"
+#include "fastq-parse.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <getopt.h>
 #include <zlib.h>
-
-#include "kseq.h"
-KSEQ_INIT(gzFile, gzread)
 
 
 #if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
@@ -105,15 +106,16 @@ void unpackkmer( uint32_t kmer, char* s, int k )
 }
 
 
-void count_fastq_kmers(gzFile* fin, uint32_t* cs)
+void count_fastq_kmers(FILE* fin, uint32_t* cs)
 {
-    kseq_t* seq = kseq_init(fin);
+    seq_t* seq = fastq_alloc_seq();
+    fastq_t* fqf = fastq_open(fin);
     int i;
     int n;
     uint32_t kmer;
 
-    while (kseq_read(seq) >= 0) {
-        n = (int)seq->seq.l - k + 1;
+    while (fastq_next(fqf, seq)) {
+        n = (int)seq->seq.n - k + 1;
         for (i = 0; i < n; i++) {
             if( packkmer(seq->seq.s + i, &kmer, k) ) {
                 cs[kmer]++;
@@ -121,7 +123,8 @@ void count_fastq_kmers(gzFile* fin, uint32_t* cs)
         }
     }
 
-    kseq_destroy(seq);
+    fastq_free_seq(seq);
+    fastq_close(fqf);
 }
 
 
@@ -154,7 +157,6 @@ int main(int argc, char* argv[])
     uint32_t* cs; /* counts */
 
     FILE* fin;
-    gzFile gzfin;
 
     int opt;
     int opt_idx;
@@ -222,15 +224,7 @@ int main(int argc, char* argv[])
     }
 
     if (optind >= argc || (argc - optind == 1 && strcmp(argv[optind],"-") == 0)) {
-        gzfin = gzdopen( fileno(stdin), "rb" );
-        if (gzfin == NULL) {
-            fprintf(stderr, "Malformed file 'stdin'.\n");
-            return 1;
-        }
-
-        count_fastq_kmers(gzfin, cs);
-
-        gzclose(gzfin);
+        count_fastq_kmers(stdin, cs);
     }
     else {
         for (; optind < argc; optind++) {
@@ -240,15 +234,7 @@ int main(int argc, char* argv[])
                 continue;
             }
 
-            gzfin = gzdopen(fileno(fin), "rb");
-            if (gzfin == NULL) {
-                fprintf(stderr, "Malformed file '%s'.\n", argv[optind]);
-                continue;
-            }
-
-            count_fastq_kmers(gzfin, cs);
-
-            gzclose(gzfin);
+            count_fastq_kmers(fin, cs);
         }
     }
 
