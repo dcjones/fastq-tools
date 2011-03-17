@@ -47,16 +47,6 @@ static int count_flag;
 
 
 
-void print_fastq_entry(FILE* fout, seq_t* seq)
-{
-    fprintf(fout, "@%s\n%s\n+%s\n%s\n",
-                  seq->id1.s,
-                  seq->seq.s,
-                  seq->id2.s,
-                  seq->qual.s );
-}
-
-
 void fastq_grep(FILE* fin, FILE* fout, pcre* re)
 {
     int rc;
@@ -78,7 +68,7 @@ void fastq_grep(FILE* fin, FILE* fout, pcre* re)
 
         if ((invert_flag && rc == PCRE_ERROR_NOMATCH) || rc >= 0) {
             if (count_flag) count++;
-            else            print_fastq_entry(fout, seq);
+            else            fastq_print(fout, seq);
         }
     }
 

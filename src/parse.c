@@ -176,7 +176,7 @@ int fastq_next(fastq_t* f, seq_t* seq)
 
         /* read id1 */
         else if (f->state == STATE_ID1) {
-            if (*f->c == '@') {
+            if (*f->c == '@' || *f->c == '>') {
                 f->c++;
                 fastq_get_line(f, &seq->id1);
                 if (f->state == STATE_EOF) return 0;
@@ -184,7 +184,9 @@ int fastq_next(fastq_t* f, seq_t* seq)
                 f->state = STATE_SEQ;
             }
             else {
-                fprintf(stderr, "Malformed FASTQ file: expecting an '@', saw a '%c'\n", *f->c);
+                fprintf(stderr,
+                        "Malformed FASTQ file: expecting an '@' or '>', saw a '%c'\n",
+                        *f->c);
                 exit(1);
             }
         }
@@ -207,8 +209,12 @@ int fastq_next(fastq_t* f, seq_t* seq)
                 f->state = STATE_QUAL;
             }
             else {
-                fprintf(stderr, "Malformed FASTQ file: expecting an '+', saw a '%c'\n", *f->c);
-                exit(1);
+                /* fasta style entry */
+                seq->id2.s[0]  = '\0';
+                seq->qual.s[0] = '\0';
+
+                f->state = STATE_ID1;
+                break;
             }
         }
 
@@ -230,6 +236,26 @@ int fastq_next(fastq_t* f, seq_t* seq)
     }
 
     return 1;
+}
+
+
+void fastq_print(FILE* fout, seq_t* seq)
+{
+    /* FASTQ */
+    if (seq->qual.n > 0) {
+        fprintf(fout, "@%s\n%s\n+%s\n%s\n",
+                      seq->id1.s,
+                      seq->seq.s,
+                      seq->id2.s,
+                      seq->qual.s );
+    }
+
+    /* FASTA */
+    else {
+        fprintf(fout, ">%s\n%s\n",
+                      seq->id1.s,
+                      seq->seq.s );
+    }
 }
 
 
