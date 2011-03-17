@@ -10,8 +10,8 @@
  */
 
 
-#include "fastq-common.h"
-#include "fastq-parse.h"
+#include "common.h"
+#include "parse.h"
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>

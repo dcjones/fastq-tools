@@ -7,7 +7,7 @@
  */
 
 
-#include "fastq-common.h"
+#include "common.h"
 #include <stdlib.h>
 
 

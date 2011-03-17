@@ -5,8 +5,8 @@
  *
  */
 
-#include "fastq-parse.h"
-#include "fastq-common.h"
+#include "parse.h"
+#include "common.h"
 #include <stdlib.h>
 #include <ctype.h>
 

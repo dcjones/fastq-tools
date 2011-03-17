@@ -4,19 +4,18 @@
  *
  * Copyright (c) 2011 by Daniel C. Jones <dcjones@cs.washington.edu>
  *
- * fastq-match :
- * Smith-Waterman alignments against sequences within a fastq file.
- *
+ * fastq-uniq :
+ * Collapsing a fastq file into only unique read sequences.
  */
 
 
 #include "common.h"
+#include "hash.h"
 #include "parse.h"
-#include "sw.h"
-#include <stdlib.h>
 #include <string.h>
 #include <zlib.h>
 #include <getopt.h>
+
 
 #if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
@@ -28,42 +27,65 @@
 
 
 static int help_flag;
-
+static int verbose_flag;
+size_t total_reads;
 
 void print_help()
 {
-    fprintf(stderr, 
-"fastq-match [OPTION]... QUERY [FILE]...\n"
-"Perform Smith-Waterman local alignment of a query sequence\n"
-"against each sequence in a fastq file.\n\n"
+    fprintf(stderr,
+"fastq-uniq [OPTION] [FILE]...\n"
+"Output a non-redundant FASTQ file, in which there are no duplicate reads.\n"
+"(Warning: this program can be somewhat memory intensive.)\n\n"
 "Options:\n"
 "  -h, --help              print this message\n"
+"  -v, --verbose           print status along the way\n"
     );
 }
 
 
-
-
-void fastq_match(FILE* fin, FILE* fout,
-                 sw_t* sw,
-                 unsigned char* query, int n)
+void fastq_hash(FILE* fin, hash_table* T)
 {
-    int score;
-
     fastq_t* fqf = fastq_open(fin);
     seq_t* seq = fastq_alloc_seq();
 
     while (fastq_next(fqf, seq)) {
-        fprintf(fout, "%s\t", seq->seq.s);
+        inc_hash_table(T, seq->seq.s, seq->seq.n);
 
-        fastq_sw_conv_seq((unsigned char*)seq->seq.s, seq->seq.n);
-        score = fastq_sw(sw, (unsigned char*)seq->seq.s, seq->seq.n);
-
-        fprintf(fout, "%d\n", score);
+        total_reads++;
+        if (verbose_flag && total_reads % 100000 == 0) {
+            fprintf(stderr, "%zu reads processed ...\n", total_reads);
+        }
     }
 
     fastq_free_seq(seq);
     fastq_close(fqf);
+}
+
+
+int compare_hashed_value_count(const void* x, const void* y)
+{
+    hashed_value* const * a = x;
+    hashed_value* const * b = y;
+
+    if( (*a)->count > (*b)->count ) return -1;
+    if( (*a)->count < (*b)->count ) return 1;
+    return 0;
+}
+
+
+
+void print_hash_table(FILE* fout, hash_table* T)
+{
+    hashed_value** S = dump_hash_table(T);
+    qsort(S, T->m, sizeof(hashed_value*), compare_hashed_value_count);
+
+    size_t i;
+    for (i = 0; i < T->m; i++) {
+        fprintf(fout, ">unique-read-%07zu (%zu copies)\n", i, S[i]->count);
+        fwrite(S[i]->value, S[i]->len, sizeof(char), fout);
+        fprintf(fout, "\n");
+    }
+    free(S);
 }
 
 
@@ -73,12 +95,9 @@ int main(int argc, char* argv[])
     SET_BINARY_MODE(stdin);
     SET_BINARY_MODE(stdout);
 
-    unsigned char* query;
-    int query_len;
+    hash_table* T = create_hash_table();
 
-    sw_t* sw;
-
-    FILE*  fin;
+    FILE* fin   ;
 
     help_flag = 0;
 
@@ -86,16 +105,14 @@ int main(int argc, char* argv[])
     int opt_idx;
 
     static struct option long_options[] =
-        { 
-          {"help",       no_argument, &help_flag, 1},
-          {"gap-init",   required_argument, NULL, 0},
-          {"gap-extend", required_argument, NULL, 0},
-          {0, 0, 0, 0}
-        };
-
+    {
+        {"help",    no_argument, &help_flag,    1},
+        {"verbose", no_argument, &verbose_flag, 1},
+        {0, 0, 0, 0}
+    };
 
     while (1) {
-        opt = getopt_long(argc, argv, "h", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "hv", long_options, &opt_idx);
 
         if (opt == -1) break;
 
@@ -108,6 +125,10 @@ int main(int argc, char* argv[])
 
             case 'h':
                 help_flag = 1;
+                break;
+
+            case 'v':
+                verbose_flag = 1;
                 break;
 
             case '?':
@@ -123,19 +144,8 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    if (optind >= argc) {
-        fprintf(stderr, "A query sequence must be specified.\n");
-        return 1;
-    }
-
-    query = (unsigned char*)argv[optind++];
-    query_len = strlen((char*)query);
-    fastq_sw_conv_seq(query, query_len);
-
-    sw = fastq_alloc_sw(query, query_len);
-
     if (optind >= argc || (argc - optind == 1 && strcmp(argv[optind],"-") == 0)) {
-        fastq_match(stdin, stdout, sw, query, query_len);
+        fastq_hash(stdin, T);
     }
     else {
         for (; optind < argc; optind++) {
@@ -145,14 +155,12 @@ int main(int argc, char* argv[])
                 continue;
             }
 
-            fastq_match(fin, stdout, sw, query, query_len);
+            fastq_hash(fin, T);
         }
     }
 
-    fastq_free_sw(sw);
+    print_hash_table(stdout, T);
 
+    destroy_hash_table(T);
     return 0;
 }
-
-
-

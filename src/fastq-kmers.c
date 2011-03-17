@@ -9,8 +9,8 @@
  *
  */
 
-#include "fastq-common.h"
-#include "fastq-parse.h"
+#include "common.h"
+#include "parse.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

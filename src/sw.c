@@ -16,8 +16,8 @@
  */
 
 
-#include "fastq-sw.h"
-#include "fastq-common.h"
+#include "sw.h"
+#include "common.h"
 #include <string.h>
 #include <stdlib.h>
 
