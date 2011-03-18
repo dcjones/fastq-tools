@@ -3,11 +3,8 @@
  *
  * Copyright (c) 2011 by Daniel C. Jones <dcjones@cs.washington.edu>
  *
- * fastq-parse :
+ * parse :
  * A parser for FASTQ files.
- *
- * This parser is mostly derivative of Heng Li's.
- * See: http://lh3lh3.users.sourceforge.net/kseq.shtml
  *
  */
 

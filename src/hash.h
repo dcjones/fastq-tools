@@ -1,3 +1,13 @@
+/*
+ * This file is part of fastq-tools.
+ *
+ * Copyright (c) 2011 by Daniel C. Jones <dcjones@cs.washington.edu>
+ *
+ * hash :
+ * A quick and simple all-purpose hash table.
+ *
+ */
+
 
 #ifndef FASTQ_TOOLS_HASH_H
 #define FASTQ_TOOLS_HASH_H

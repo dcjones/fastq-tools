@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2011 by Daniel C. Jones <dcjones@cs.washington.edu>
  *
- * fastq-sw :
+ * sw :
  * Local alignments of nucleotide sequences via Smith-Waterman.
  *
  */

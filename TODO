@@ -1,0 +1,51 @@
+
+general
+=======
+
+Man pages!
+
+
+I would like to encorporate some domain-specific compression algorithm. Options
+I know of:
+  * G-SQZ (http://www.tgen.org/research/gsqueez.cfm) : not open source (i.e. not an option)
+  * fqzcomp (http://seqanswers.com/forums/archive/index.php/t-6349.html)
+  * DSRC (http://bioinformatics.oxfordjournals.org/cgi/content/short/27/6/860?rss=1) :
+    Not yet available?
+  * Invent my own.
+
+
+
+
+
+
+program specific
+================
+
+
+fastq-grep
+----------
+
+
+
+fastq-kmers
+-----------
+
+
+
+fastq-match
+-----------
+
+Specifying the score matrix, rather than using a hardcoded.
+
+The implementation of the Smith-Waterman algorithm could be more efficient. We
+might look to Phil Green's cross_match implementation for ideas.
+
+An option to return the sequences that match past a certain threshold would be
+useful.
+
+
+
+fastq-uniq
+----------
+
+

@@ -1,4 +1,12 @@
 
+/*
+ * This file is part of fastq-tools.
+ *
+ * Copyright (c) 2011 by Daniel C. Jones <dcjones@cs.washington.edu>
+ *
+ */
+
+
 #include "hash.h"
 #include "common.h"
 #include <stdlib.h>
