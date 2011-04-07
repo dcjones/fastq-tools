@@ -1,0 +1,33 @@
+.TH FASTQ-GREP 1
+
+.SH NAME
+fastq-grep - print sequences matching a pattern
+
+.SH SYNOPSIS
+.B fastq-grep [OPTION]... PATTERN [FILE]...
+
+.SH DESCRIPTION
+Given a PATTERN, specified as a perl-compatible regular expression, print every
+FASTQ entry with a matching nucleotide sequence.
+
+One ore more FILEs may be specified, otherwise input is read from standard input.
+Input files may be gziped.
+
+.SH OPTIONS
+.TP 
+\fB\-v\fR, \fB\-\-invert\-match\fR
+Invert the sense of matching, to select non-matching entries.
+.TP
+\fB\-c\fR, \fB\-\-count\fR
+Suppress normal output; instead output the number of matching (or, non-matching,
+with '-v') entries.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Output a help message and exit.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Output version information and exit.
+
+.SH AUTHOR
+Written by Daniel C. Jones <dcjones@cs.washington.edu>
+

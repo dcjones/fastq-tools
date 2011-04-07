@@ -25,10 +25,7 @@
 #  define SET_BINARY_MODE(file)
 #endif
 
-
-static int help_flag;
-static int verbose_flag;
-size_t total_reads;
+static const char* prog_name = "fastq-uniq";
 
 void print_help()
 {
@@ -37,10 +34,16 @@ void print_help()
 "Output a non-redundant FASTQ file, in which there are no duplicate reads.\n"
 "(Warning: this program can be somewhat memory intensive.)\n\n"
 "Options:\n"
-"  -h, --help              print this message\n"
 "  -v, --verbose           print status along the way\n"
+"  -h, --help              print this message\n"
+"  -V, --version           output version information and exit\n"
     );
 }
+
+
+static int verbose_flag;
+static size_t total_reads;
+
 
 
 void fastq_hash(FILE* fin, hash_table* T)
@@ -99,20 +102,19 @@ int main(int argc, char* argv[])
 
     FILE* fin   ;
 
-    help_flag = 0;
-
     int opt;
     int opt_idx;
 
     static struct option long_options[] =
     {
-        {"help",    no_argument, &help_flag,    1},
         {"verbose", no_argument, &verbose_flag, 1},
+        {"help",    no_argument, NULL,          'h'},
+        {"version", no_argument, NULL,          'V'},
         {0, 0, 0, 0}
     };
 
     while (1) {
-        opt = getopt_long(argc, argv, "hv", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "vhV", long_options, &opt_idx);
 
         if (opt == -1) break;
 
@@ -123,10 +125,6 @@ int main(int argc, char* argv[])
                 }
                 break;
 
-            case 'h':
-                help_flag = 1;
-                break;
-
             case 'v':
                 verbose_flag = 1;
                 break;
@@ -134,15 +132,19 @@ int main(int argc, char* argv[])
             case '?':
                 return 1;
 
+            case 'h':
+                print_help();
+                return 0;
+
+            case 'V':
+                print_version(stdout, prog_name);
+                return 0;
+
             default:
                 abort();
         }
     }
 
-    if (help_flag) {
-        print_help();
-        return 0;
-    }
 
     if (optind >= argc || (argc - optind == 1 && strcmp(argv[optind],"-") == 0)) {
         fastq_hash(stdin, T);

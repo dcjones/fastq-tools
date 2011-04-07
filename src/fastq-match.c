@@ -27,21 +27,20 @@
 #endif
 
 
-static int help_flag;
+static const char* prog_name = "fastq-match";
 
 
 void print_help()
 {
-    fprintf(stderr, 
+    fprintf(stdout, 
 "fastq-match [OPTION]... QUERY [FILE]...\n"
 "Perform Smith-Waterman local alignment of a query sequence\n"
 "against each sequence in a fastq file.\n\n"
 "Options:\n"
 "  -h, --help              print this message\n"
+"  -V, --version           output version information and exit\n"
     );
 }
-
-
 
 
 void fastq_match(FILE* fin, FILE* fout,
@@ -80,22 +79,19 @@ int main(int argc, char* argv[])
 
     FILE*  fin;
 
-    help_flag = 0;
-
     int opt;
     int opt_idx;
 
     static struct option long_options[] =
         { 
-          {"help",       no_argument, &help_flag, 1},
-          {"gap-init",   required_argument, NULL, 0},
-          {"gap-extend", required_argument, NULL, 0},
+          {"help",       no_argument,       NULL, 'h'},
+          {"version",    no_argument,       NULL, 'V'},
           {0, 0, 0, 0}
         };
 
 
     while (1) {
-        opt = getopt_long(argc, argv, "h", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "hV", long_options, &opt_idx);
 
         if (opt == -1) break;
 
@@ -107,8 +103,12 @@ int main(int argc, char* argv[])
                 break;
 
             case 'h':
-                help_flag = 1;
-                break;
+                print_help();
+                return 0;
+
+            case 'V':
+                print_version(stdout, prog_name);
+                return 0;
 
             case '?':
                 return 1;
@@ -118,10 +118,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (help_flag) {
-        print_help();
-        return 0;
-    }
 
     if (optind >= argc) {
         fprintf(stderr, "A query sequence must be specified.\n");

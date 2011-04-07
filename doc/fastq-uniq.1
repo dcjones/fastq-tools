@@ -1,0 +1,35 @@
+.TH FASTQ-UNIQ 1
+
+.SH NAME
+fastq-uniq - print sequences matching a pattern
+
+.SH SYNOPSIS
+.B fastq-uniq [OPTION]... PATTERN [FILE]...
+
+.SH DESCRIPTION
+Print a non-redundant list of occurring sequences, removing all duplicate
+sequences. Output is in FASTA format (as quality strings are ignored), with
+sequence identifiers formatted as,
+
+>uniq-read-N (M copies)
+
+Where, N in a unique number assigned to the sequence and M is the number of
+copies occurring.
+
+One ore more FILEs may be specified, otherwise input is read from standard input.
+Input files may be gziped.
+
+.SH OPTIONS
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Print status updates along the way.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Output a help message and exit.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Output version information and exit.
+
+.SH AUTHOR
+Written by Daniel C. Jones <dcjones@cs.washington.edu>
+

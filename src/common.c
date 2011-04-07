@@ -8,7 +8,15 @@
 
 
 #include "common.h"
+#include "version.h"
 #include <stdlib.h>
+
+
+void print_version(FILE *f, const char* prog_name)
+{
+    fprintf(f, "%s (fastq-tools) %s\n",
+            prog_name, FASTQ_TOOLS_VERSION);
+}
 
 
 void or_die(int b, const char* msg)

@@ -27,6 +27,7 @@
 #  define SET_BINARY_MODE(file)
 #endif
 
+static const char* prog_name = "fastq-kmers";
 
 void print_help()
 {
@@ -35,12 +36,12 @@ void print_help()
 "Print kmer counts for the given kmer size.\n"
 "Output is in two tab-seperated columns for kmer and frequency.\n\n"
 "Options:\n"
+"  -k NUM, --size=NUM      kmer size (default: 1)\n"
 "  -h, --help              print this message\n"
-"  -k, --size              kmer size (default: 1)\n"
+"  -V, --version           output version information and exit\n"
     );
 }
 
-static int help_flag;
 static int k;
 
 int packkmer( const char* s, uint32_t* kmer, int k )
@@ -150,7 +151,6 @@ int main(int argc, char* argv[])
     SET_BINARY_MODE(stdin);
     SET_BINARY_MODE(stdout);
 
-    help_flag = 0;
     k = 1;
 
     uint32_t n;   /* number of kmers: 4^k */
@@ -162,13 +162,14 @@ int main(int argc, char* argv[])
     int opt_idx;
     static struct option long_options[] =
         { 
-          {"help", no_argument, &help_flag, 1},
-          {"size", no_argument, 0, 0},
+          {"size", no_argument,    0, 0},
+          {"help", no_argument,    0, 'h'},
+          {"version", no_argument, 0, 'V'},
           {0, 0, 0, 0}
         };
 
     while (1) {
-        opt = getopt_long(argc, argv, "hk:", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "k:hV", long_options, &opt_idx);
 
         if( opt == -1 ) break;
 
@@ -182,13 +183,17 @@ int main(int argc, char* argv[])
                 }
                 break;
 
-            case 'h':
-                help_flag = 1;
-                break;
-
             case 'k':
                 k = atoi(optarg);
                 break;
+
+            case 'h':
+                print_help();
+                return 0;
+
+            case 'V':
+                print_version(stdout, prog_name);
+                return 0;
 
             case '?':
                 return 1;
@@ -196,11 +201,6 @@ int main(int argc, char* argv[])
             default:
                 abort();
         }
-    }
-
-    if (help_flag) {
-        print_help();
-        return 0;
     }
 
     if (k < 1) {

@@ -1,0 +1,46 @@
+.TH FASTQ-KMERS 1
+
+.SH NAME
+fastq-kmers - print the frequency of all k-mers for a given k
+
+.SH SYNOPSIS
+.B fastq-kmers [OPTION]... [FILE]...
+
+.SH DESCRIPTION
+For a given k, for example k = 4, a table in the following format is output,
+
+.fc # ^
+.ta T 2i
+#kmer^frequency#
+.br
+#AAAA^1358#
+.br
+#AAAC^2393#
+.br
+#AAAG^1039#
+.br
+#AAAT^964#
+.br
+#AACA^4076#
+.br
+#...^...#
+.br
+#TTTT^876#
+
+One ore more FILEs may be specified, otherwise input is read from standard input.
+Input files may be gziped.
+
+.SH OPTIONS
+.TP
+\fB\-k NUM\fR, \fB\-\-size=NUM\fR
+The size of the k-mers to count, where 1 <= k <= 16. (default: 1)
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Output a help message and exit.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Output version information and exit.
+
+.SH AUTHOR
+Written by Daniel C. Jones <dcjones@cs.washington.edu>
+

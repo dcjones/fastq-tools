@@ -1,0 +1,27 @@
+.TH FASTQ-MATCH 1
+
+.SH NAME
+fastq-match - print sequences matching a pattern
+
+.SH SYNOPSIS
+.B fastq-match [OPTION]... QUERY [FILE]...
+
+.SH DESCRIPTION
+Given a nucleotide sequence QUERY, perform local alignment against every FASTQ
+sequence using the Smith-Waterman algorithm. For each read, an alignment score
+is printed, so that the output consists of a simple list of scores.
+
+One ore more FILEs may be specified, otherwise input is read from standard input.
+Input files may be gziped.
+
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Output a help message and exit.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Output version information and exit.
+
+.SH AUTHOR
+Written by Daniel C. Jones <dcjones@cs.washington.edu>
+

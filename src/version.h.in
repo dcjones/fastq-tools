@@ -1,0 +1,8 @@
+
+#ifndef FASTQ_TOOLS_VERSION_H
+#define FASTQ_TOOLS_VERSION_H
+
+#define FASTQ_TOOLS_VERSION "@VERSION@"
+
+#endif
+

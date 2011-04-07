@@ -28,21 +28,24 @@
 #endif
 
 
+static const char* prog_name = "fastq-grep";
+
+
 void print_help()
 {
-    fprintf( stderr, 
+    fprintf(stdout, 
 "fastq-grep [OPTION]... PATTERN [FILE]...\n"
 "Search for PATTERN in the read sequences in each FILE or standard input.\n"
 "PATTERN, by default, is a perl compatible regular expression.\n\n"
 "Options:\n"
-"  -h, --help              print this message\n"
 "  -v, --invert-match      select nonmatching entries\n"
 "  -c, --count             output only the number of matching sequences\n"
+"  -h, --help              print this message\n"
+"  -V, --version           output version information and exit\n"
     );
 }
 
 static int invert_flag;
-static int help_flag;
 static int count_flag;
 
 
@@ -94,7 +97,6 @@ int main(int argc, char* argv[])
 
 
     invert_flag  = 0;
-    help_flag    = 0;
     count_flag   = 0;
 
     int opt;
@@ -103,14 +105,15 @@ int main(int argc, char* argv[])
 
     static struct option long_options[] =
         { 
-          {"help", no_argument, &help_flag, 1},
           {"invert-match", no_argument, &invert_flag, 1},
-          {"count", no_argument, &count_flag, 1},
+          {"count",        no_argument, &count_flag,  1},
+          {"help",         no_argument, NULL, 'h'},
+          {"version",      no_argument, NULL, 'V'},
           {0, 0, 0, 0}
         };
 
     while (1) {
-        opt = getopt_long(argc, argv, "hvc", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "vchV", long_options, &opt_idx);
 
         if( opt == -1 ) break;
 
@@ -121,10 +124,6 @@ int main(int argc, char* argv[])
                 }
                 break;
 
-            case 'h':
-                help_flag = 1;
-                break;
-
             case 'v':
                 invert_flag = 1;
                 break;
@@ -133,17 +132,20 @@ int main(int argc, char* argv[])
                 count_flag = 1;
                 break;
 
+            case 'h':
+                print_help();
+                return 0;
+
+            case 'V':
+                print_version(stdout, prog_name);
+                return 0;
+
             case '?':
                 return 1;
 
             default:
                 abort();
         }
-    }
-
-    if (help_flag) {
-        print_help();
-        return 0;
     }
 
     if (optind >= argc) {

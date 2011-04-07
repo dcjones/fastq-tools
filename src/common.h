@@ -13,6 +13,8 @@
 
 #include <stdio.h>
 
+void print_version(FILE* f, const char* prog_name);
+
 void or_die(int b, const char* msg);
 
 void* malloc_or_die(size_t);
