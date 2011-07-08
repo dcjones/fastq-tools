@@ -67,7 +67,7 @@ typedef enum
 fastq_t* fastq_open(FILE* f)
 {
     fastq_t* fqf = malloc_or_die(sizeof(fastq_t));
-    or_die((int)(fqf->file = gzdopen(fileno(f), "rb")),
+    or_die((int)((fqf->file = gzdopen(fileno(f), "rb")) != NULL),
            "Can not open gzip file.");
     
     fqf->state = STATE_ID1;
@@ -113,7 +113,7 @@ void fastq_refill(fastq_t* f)
 
 void fastq_get_line(fastq_t* f, str_t* s)
 {
-    int i = 0;
+    size_t i = 0;
 
     if (f->state == STATE_EOF) goto fastq_get_line_done;
 
@@ -169,10 +169,12 @@ int fastq_next(fastq_t* f, seq_t* seq)
         }
 
         /* skip comments */
+        /*
         else if (*f->c == ';') {
             fastq_get_line(f, NULL);
             if (f->state == STATE_EOF) return 0;
         }
+        */
 
         /* read id1 */
         else if (f->state == STATE_ID1) {

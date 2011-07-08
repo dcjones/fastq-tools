@@ -13,6 +13,7 @@
 #include "hash.h"
 #include "parse.h"
 #include <string.h>
+#include <inttypes.h>
 #include <zlib.h>
 #include <getopt.h>
 
@@ -84,7 +85,7 @@ void print_hash_table(FILE* fout, hash_table* T)
 
     size_t i;
     for (i = 0; i < T->m; i++) {
-        fprintf(fout, ">unique-read-%07zu (%zu copies)\n", i, S[i]->count);
+        fprintf(fout, ">unique-read-%07zu (%"PRIu32" copies)\n", i, S[i]->count);
         fwrite(S[i]->value, S[i]->len, sizeof(char), fout);
         fprintf(fout, "\n");
     }
