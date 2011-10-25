@@ -49,6 +49,7 @@ typedef struct
 fastq_t* fastq_open(FILE*);
 void fastq_close(fastq_t*);
 int  fastq_next(fastq_t*, seq_t*);
+void fastq_rewind(fastq_t*);
 
 void fastq_print(FILE* fout, seq_t* seq);
 

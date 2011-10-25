@@ -241,6 +241,15 @@ int fastq_next(fastq_t* f, seq_t* seq)
 }
 
 
+void fastq_rewind(fastq_t* fqf)
+{
+    gzrewind(fqf->file);
+    fqf->state = STATE_ID1;
+    fqf->buf[0] = '\0';
+    fqf->c = fqf->buf;
+}
+
+
 void fastq_print(FILE* fout, seq_t* seq)
 {
     /* FASTQ */

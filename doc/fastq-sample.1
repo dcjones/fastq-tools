@@ -1,0 +1,45 @@
+.TH FASTQ-SAMPLE 1
+
+.SH NAME
+fastq-sample - sample random reads from a fastq file
+
+.SH SYNOPSIS
+.B fastq-sample [OPTION]... [[FILE] [FILE2]]
+
+.SH DESCRIPTION
+Given a FASTQ file, random reads are sampled and output, with or without
+replacement, according to the '-r' option. The number of reads to sample can be
+specifed with the '-n' option, or in terms of the proportion of total reads
+using '-p' option.
+
+If two files are given, the input is treated as paired-end, and matching pairs
+are sampled and output into seperate files: [prefix].1.fastq and
+[prefix].2.fastq, where [prefix] is set with the '-o' option.
+
+.SH OPTIONS
+.TP
+\fB\-n N\fR
+The number of reads to sample and output
+.TP
+\fB\-p N\fR
+The number of reads to sample in terms of the proportion of total reads. If
+sampling with replacement, this number may be greater than 1.0.
+.TP
+\fB\-o\fR, \fB\-\-output=PREFIX\fR
+The filename prefix to which output should be written. If single-end data is
+being sampled, the output file is [PREFIX].fastq, and with paired-end,
+[PREFIX].1.fastq and [PREFIX].2.fastq.
+.TP
+\fB\-r\fR, \fB\-\-with\-replacement\fR
+Sample with replacement. (By default, sampling is done without replacement.)
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Output a help message and exit.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Output version information and exit.
+
+
+.SH AUTHOR
+Written by Daniel C. Jones <dcjones@cs.washington.edu>
+
