@@ -38,6 +38,7 @@ void print_help()
 "Search for PATTERN in the read sequences in each FILE or standard input.\n"
 "PATTERN, by default, is a perl compatible regular expression.\n\n"
 "Options:\n"
+"  -i, --id                match the read id (by default, sequence is matched)\n"
 "  -v, --invert-match      select nonmatching entries\n"
 "  -c, --count             output only the number of matching sequences\n"
 "  -h, --help              print this message\n"
@@ -47,6 +48,7 @@ void print_help()
 
 static int invert_flag;
 static int count_flag;
+static int id_flag;
 
 
 
@@ -60,10 +62,11 @@ void fastq_grep(FILE* fin, FILE* fout, pcre* re)
     seq_t* seq = fastq_alloc_seq();
 
     while (fastq_next(fqf, seq)) {
+
         rc = pcre_exec(re,          /* pattern */
                        NULL,        /* extre data */
-                       seq->seq.s,  /* subject */
-                       seq->seq.n,  /* subject length */
+                       id_flag ? seq->id1.s : seq->seq.s,
+                       id_flag ? seq->id1.n : seq->seq.n,
                        0,           /* subject offset */
                        0,           /* options */
                        ovector,     /* output vector */
@@ -98,6 +101,7 @@ int main(int argc, char* argv[])
 
     invert_flag  = 0;
     count_flag   = 0;
+    id_flag      = 0;
 
     int opt;
     int opt_idx;
@@ -105,6 +109,7 @@ int main(int argc, char* argv[])
 
     static struct option long_options[] =
         { 
+          {"id",           no_argument, &id_flag,     1},
           {"invert-match", no_argument, &invert_flag, 1},
           {"count",        no_argument, &count_flag,  1},
           {"help",         no_argument, NULL, 'h'},
@@ -113,7 +118,7 @@ int main(int argc, char* argv[])
         };
 
     while (1) {
-        opt = getopt_long(argc, argv, "vchV", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "ivchV", long_options, &opt_idx);
 
         if( opt == -1 ) break;
 
@@ -122,6 +127,10 @@ int main(int argc, char* argv[])
                 if (long_options[opt_idx].flag != 0) break;
                 if (optarg) {
                 }
+                break;
+
+            case 'i':
+                id_flag = 1;
                 break;
 
             case 'v':
