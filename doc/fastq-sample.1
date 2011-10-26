@@ -4,7 +4,7 @@
 fastq-sample - sample random reads from a fastq file
 
 .SH SYNOPSIS
-.B fastq-sample [OPTION]... [[FILE] [FILE2]]
+.B fastq-sample [OPTION]... FILE [FILE2]
 
 .SH DESCRIPTION
 Given a FASTQ file, random reads are sampled and output, with or without
@@ -32,6 +32,14 @@ being sampled, the output file is [PREFIX].fastq, and with paired-end,
 .TP
 \fB\-r\fR, \fB\-\-with\-replacement\fR
 Sample with replacement. (By default, sampling is done without replacement.)
+.TP
+\fB\-c\fR, \fB\-\-complement-output=PREFIX\fR
+Output reads not included in the random sample to a file (or files) with the
+given prefix. By default, these reads are not output.
+.TP
+\fB\-s\fR, \fB\-\-seed\fR
+Seed the random number generator. Using the same seed on the same data set will
+produce the same random sample.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Output a help message and exit.
