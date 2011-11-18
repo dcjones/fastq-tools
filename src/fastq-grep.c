@@ -64,7 +64,7 @@ void fastq_grep(FILE* fin, FILE* fout, pcre* re)
     while (fastq_next(fqf, seq)) {
 
         rc = pcre_exec(re,          /* pattern */
-                       NULL,        /* extre data */
+                       NULL,        /* extra data */
                        id_flag ? seq->id1.s : seq->seq.s,
                        id_flag ? seq->id1.n : seq->seq.n,
                        0,           /* subject offset */
@@ -72,7 +72,7 @@ void fastq_grep(FILE* fin, FILE* fout, pcre* re)
                        ovector,     /* output vector */
                        3         ); /* output vector length */
 
-        if ((invert_flag && rc == PCRE_ERROR_NOMATCH) || rc >= 0) {
+        if ((invert_flag && rc == PCRE_ERROR_NOMATCH) || (!invert_flag && rc >= 0)) {
             if (count_flag) count++;
             else            fastq_print(fout, seq);
         }
