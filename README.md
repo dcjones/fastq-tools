@@ -14,19 +14,27 @@ The following programs are provided. See the individual man pages for more
 information.
 
 
-*fastq-grep* : match sequences against regular expressions
+* *fastq-grep* : match sequences against regular expressions
 
-*fastq-kmers* : count k-mer occurrences
+* *fastq-kmers* : count k-mer occurrences
 
-*fastq-match* : (smith-waterman) local sequence alignment
+* *fastq-match* : (smith-waterman) local sequence alignment
 
-*fastq-uniq* : count duplicate reads
+* *fastq-qual* : tabulate quality scores
+
+* *fastq-sample* : randomly sample reads, with or without replacement
+
+* *fastq-uniq* : count duplicate reads
+
 
 
 install
 -------
 
-On most systems, this is a simple `./configure && make install`.
+On most systems, installation is as simple as `./configure && make install`.
+
+If the source was obtained from the git repository, the included `./autogen.sh`
+script must be run first to generate the `configure` script.
 
 The only external dependencies are PCRE (http://www.pcre.org/) and zlib
 (http://zlib.net/).
