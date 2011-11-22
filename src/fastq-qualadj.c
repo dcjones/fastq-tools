@@ -137,8 +137,6 @@ int main(int argc, char* argv[])
     }
     else if (offset == 0) offset = atoi(argv[optind++]);
 
-    fprintf(stderr, "%d\n", offset);
-
     FILE* fin;
 
     if (optind >= argc || (argc - optind == 1 && strcmp(argv[optind],"-") == 0)) {
