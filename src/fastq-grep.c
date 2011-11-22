@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
     while (1) {
         opt = getopt_long(argc, argv, "ivchV", long_options, &opt_idx);
 
-        if( opt == -1 ) break;
+        if (opt == -1) break;
 
         switch (opt) {
             case 0:

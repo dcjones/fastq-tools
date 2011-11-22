@@ -26,6 +26,7 @@ information.
 
 * *fastq-uniq* : count duplicate reads
 
+* *fastq-qualadj* : adjust quality scores by a fixed offset
 
 
 install

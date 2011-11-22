@@ -1,5 +1,5 @@
 
-bin_PROGRAMS = fastq-grep fastq-kmers fastq-match fastq-uniq fastq-qual fastq-sample
+bin_PROGRAMS = fastq-grep fastq-kmers fastq-match fastq-uniq fastq-qual fastq-sample fastq-qualadj
 
 fastq_common_src=common.h common.c
 fastq_parse_src=parse.h parse.c
@@ -25,3 +25,5 @@ fastq_qual_LDADD   = -lz
 fastq_sample_SOURCES = fastq-sample.c $(fastq_common_src) $(fastq_parse_src) $(fastq_rng_src)
 fastq_sample_LDADD   = -lz
 
+fastq_qualadj_SOURCES = fastq-qualadj.c $(fastq_common_src) $(fastq_parse_src)
+fastq_qualadj_LDADD   = -lz
