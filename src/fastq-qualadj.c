@@ -81,12 +81,40 @@ int main(int argc, char* argv[])
     int opt;
     int opt_idx;
 
+    char* tmp;
+    size_t tmplen;
+
     while (1) {
-        opt = getopt_long(argc, argv, "hV", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "hV0:1::2::3::4::5::6::7::8::9::", long_options, &opt_idx);
 
         if (opt == -1) break;
 
         switch(opt) {
+
+            /* this is a bit of a hack to prevent getopt from choking on
+             * negative numbers. */
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                tmplen = 2;
+                if (optarg) tmplen += strlen(optarg);
+                tmp = malloc(tmplen + 1);
+
+                if (optarg) snprintf(tmp, tmplen + 1, "-%c%s", (char) opt, optarg);
+                else        snprintf(tmp, tmplen + 1, "-%c",   (char) opt);
+
+                offset = atoi(tmp);
+                free(tmp);
+                break;
+
+
             case 'h':
                 print_help();
                 return 0;
@@ -103,13 +131,13 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (optind >= argc) {
+    if (offset == 0 && optind >= argc) {
         fprintf(stderr, "An offset must be specified.\n");
         return 1;
     }
+    else if (offset == 0) offset = atoi(argv[optind++]);
 
-    offset = atoi(argv[optind++]);
-
+    fprintf(stderr, "%d\n", offset);
 
     FILE* fin;
 
