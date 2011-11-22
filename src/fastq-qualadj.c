@@ -51,7 +51,7 @@ void fastq_qualadj(FILE* fin, FILE* fout, int offset)
 
     while (fastq_next(fqf, seq)) {
         for (i = 0; i < seq->qual.n; ++i) {
-            c = (int) seq->qual.s[i] - offset;
+            c = (int) seq->qual.s[i] + offset;
             c = c < 0 ? 0 : (c > 126 ? 126: c);
             seq->qual.s[i] = (char) c;
         }
