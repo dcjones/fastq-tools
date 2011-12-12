@@ -40,6 +40,7 @@ void print_help()
 "Options:\n"
 "  -i, --id                match the read id (by default, sequence is matched)\n"
 "  -v, --invert-match      select nonmatching entries\n"
+"  -m, --mismatches=FILE   output mismatching entries to the given file\n"
 "  -c, --count             output only the number of matching sequences\n"
 "  -h, --help              print this message\n"
 "  -V, --version           output version information and exit\n"
@@ -52,7 +53,7 @@ static int id_flag;
 
 
 
-void fastq_grep(FILE* fin, FILE* fout, pcre* re)
+void fastq_grep(FILE* fin, FILE* fout, FILE* mismatch_file, pcre* re)
 {
     int rc;
     int ovector[3];
@@ -75,6 +76,9 @@ void fastq_grep(FILE* fin, FILE* fout, pcre* re)
         if ((invert_flag && rc == PCRE_ERROR_NOMATCH) || (!invert_flag && rc >= 0)) {
             if (count_flag) count++;
             else            fastq_print(fout, seq);
+        }
+        else if (mismatch_file) {
+            fastq_print(mismatch_file, seq);
         }
     }
 
@@ -106,11 +110,13 @@ int main(int argc, char* argv[])
     int opt;
     int opt_idx;
 
+    FILE* mismatch_file = NULL;
 
     static struct option long_options[] =
         { 
           {"id",           no_argument, &id_flag,     1},
           {"invert-match", no_argument, &invert_flag, 1},
+          {"mismatches",   required_argument, NULL, 'm'},
           {"count",        no_argument, &count_flag,  1},
           {"help",         no_argument, NULL, 'h'},
           {"version",      no_argument, NULL, 'V'},
@@ -118,7 +124,7 @@ int main(int argc, char* argv[])
         };
 
     while (1) {
-        opt = getopt_long(argc, argv, "ivchV", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "ivmchV", long_options, &opt_idx);
 
         if (opt == -1) break;
 
@@ -135,6 +141,14 @@ int main(int argc, char* argv[])
 
             case 'v':
                 invert_flag = 1;
+                break;
+
+            case 'm':
+                mismatch_file = fopen(optarg, "w");
+                if (mismatch_file == NULL) {
+                    fprintf(stderr, "No such file '%s'.\n", optarg);
+                    return 1;
+                }
                 break;
 
             case 'c':
@@ -174,7 +188,7 @@ int main(int argc, char* argv[])
 
 
     if (optind >= argc || (argc - optind == 1 && strcmp(argv[optind],"-") == 0)) {
-        fastq_grep(stdin, stdout, re);
+        fastq_grep(stdin, stdout, mismatch_file, re);
     }
     else {
         for (; optind < argc; optind++) {
@@ -184,13 +198,14 @@ int main(int argc, char* argv[])
                 continue;
             }
 
-            fastq_grep(fin, stdout, re);
+            fastq_grep(fin, stdout, mismatch_file, re);
 
             fclose(fin);
         }
     }
 
     pcre_free(re);
+    if (mismatch_file) fclose(mismatch_file);
 
     return 0;
 }
