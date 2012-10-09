@@ -1,4 +1,3 @@
-
 /*
  * This file is part of fastq-tools.
  *
@@ -8,6 +7,7 @@
  * Sample reads with or without replacement from a FASTQ file.
  *
  */
+
 #include <getopt.h>
 #include <math.h>
 #include <stdio.h>

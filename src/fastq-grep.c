@@ -33,7 +33,7 @@ static const char* prog_name = "fastq-grep";
 
 void print_help()
 {
-    fprintf(stdout, 
+    fprintf(stdout,
 "fastq-grep [OPTION]... PATTERN [FILE]...\n"
 "Search for PATTERN in the read sequences in each FILE or standard input.\n"
 "PATTERN, by default, is a perl compatible regular expression.\n\n"
