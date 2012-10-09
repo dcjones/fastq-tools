@@ -9,6 +9,7 @@
  */
 
 #include <assert.h>
+#include <ctype.h>
 #include <getopt.h>
 #include <string.h>
 #include <unistd.h>
@@ -357,6 +358,20 @@ void print_help()
 }
 
 
+/* Parse a size specification, which is just a number with a K, M, G suffix. */
+size_t parse_size(const char* str)
+{
+    char* endptr;
+    unsigned long size = strtoul(str, &endptr, 10);
+
+    if      (toupper(*endptr) == 'K') size *= 1000;
+    else if (toupper(*endptr) == 'M') size *= 1000000;
+    else if (toupper(*endptr) == 'G') size *= 1000000000;
+
+    return size;
+}
+
+
 int main(int argc, char* argv[])
 {
     int opt, opt_idx;
@@ -366,29 +381,34 @@ int main(int argc, char* argv[])
 
     static struct option long_options[] =
     {
-        {"reverse", no_argument, NULL, 'r'},
-        {"id",      no_argument, NULL, 'I'},
-        {"seq",     no_argument, NULL, 'S'},
-        {"random",  no_argument, NULL, 'R'},
-        {"help",    no_argument, NULL, 'h'},
-        {"version", no_argument, NULL, 'V'},
+        {"buffer-size", required_argument, NULL, 'S'},
+        {"reverse",     no_argument, NULL, 'r'},
+        {"id",          no_argument, NULL, 'i'},
+        {"seq",         no_argument, NULL, 's'},
+        {"random",      no_argument, NULL, 'R'},
+        {"help",        no_argument, NULL, 'h'},
+        {"version",     no_argument, NULL, 'V'},
         {0, 0, 0, 0}
     };
 
     while (true) {
-        opt = getopt_long(argc, argv, "rISRhV", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "S:risRhV", long_options, &opt_idx);
         if (opt == -1) break;
 
         switch (opt) {
+            case 'S':
+                buffer_size = parse_size(optarg);
+                break;
+
             case 'r':
                 reverse_sort = true;
                 break;
 
-            case 'I':
+            case 'i':
                 user_cmp = seq_cmp_id;
                 break;
 
-            case 'S':
+            case 's':
                 user_cmp = seq_cmp_seq;
                 break;
 
