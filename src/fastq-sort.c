@@ -17,6 +17,16 @@
 #include "parse.h"
 
 
+/* User comparison function. */
+static int (*user_cmp)(const void*, const void*);
+static int (*cmp)(const void*, const void*);
+
+int rev_cmp(const void* a, const void* b)
+{
+    return -user_cmp(a, b);
+}
+
+
 /* A collection of filenames of sorted chunks of fastq. */
 typedef struct seq_dumps_t_
 {
@@ -351,10 +361,12 @@ int main(int argc, char* argv[])
 {
     int opt, opt_idx;
     size_t buffer_size = 100000000;
-    int (*cmp)(const void*, const void*) = seq_cmp_hash;;
+    bool reverse_sort = false;
+    user_cmp = seq_cmp_id;
 
     static struct option long_options[] =
     {
+        {"reverse", no_argument, NULL, 'r'},
         {"id",      no_argument, NULL, 'I'},
         {"seq",     no_argument, NULL, 'S'},
         {"random",  no_argument, NULL, 'R'},
@@ -364,20 +376,24 @@ int main(int argc, char* argv[])
     };
 
     while (true) {
-        opt = getopt_long(argc, argv, "hV", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "rISRhV", long_options, &opt_idx);
         if (opt == -1) break;
 
         switch (opt) {
+            case 'r':
+                reverse_sort = true;
+                break;
+
             case 'I':
-                cmp = seq_cmp_id;
+                user_cmp = seq_cmp_id;
                 break;
 
             case 'S':
-                cmp = seq_cmp_seq;
+                user_cmp = seq_cmp_seq;
                 break;
 
             case 'R':
-                cmp = seq_cmp_hash;
+                user_cmp = seq_cmp_hash;
                 break;
 
             case 'h':
@@ -395,6 +411,8 @@ int main(int argc, char* argv[])
                 abort();
         }
     }
+
+    cmp = reverse_sort ? rev_cmp : user_cmp;
 
     seq_array_t* a = seq_array_create(buffer_size);
     seq_dumps_t* d = seq_dumps_create();
