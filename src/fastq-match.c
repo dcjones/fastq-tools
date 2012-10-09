@@ -47,10 +47,10 @@ void fastq_match(FILE* fin, FILE* fout, sw_t* sw)
 {
     int score;
 
-    fastq_t* fqf = fastq_open(fin);
-    seq_t* seq = fastq_alloc_seq();
+    fastq_t* fqf = fastq_create(fin);
+    seq_t* seq = seq_create();
 
-    while (fastq_next(fqf, seq)) {
+    while (fastq_read(fqf, seq)) {
         fprintf(fout, "%s\t", seq->seq.s);
 
         fastq_sw_conv_seq((unsigned char*)seq->seq.s, seq->seq.n);
@@ -59,8 +59,8 @@ void fastq_match(FILE* fin, FILE* fout, sw_t* sw)
         fprintf(fout, "%d\n", score);
     }
 
-    fastq_free_seq(seq);
-    fastq_close(fqf);
+    seq_free(seq);
+    fastq_free(fqf);
 }
 
 

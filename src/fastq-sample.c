@@ -39,7 +39,7 @@ void print_help()
 "Options:\n"
 "  -n N                    the number of reads to sample (default: 10000)\n"
 "  -p N                    the proportion of the total reads to sample\n"
-"  -o, --output=PREFIX     output file prefix\n" 
+"  -o, --output=PREFIX     output file prefix\n"
 "  -c, --complement-output=PREFIX\n"
 "                          output reads not included in the random sample to\n"
 "                          a file (or files) with the given prefix (by default,\n"
@@ -55,10 +55,10 @@ void print_help()
 /* count the number of entries in a fastq file */
 unsigned long count_entries(fastq_t* fqf)
 {
-    seq_t* seq = fastq_alloc_seq();
+    seq_t* seq = seq_create();
     unsigned long n = 0;
-    while (fastq_next(fqf, seq)) ++n;
-    fastq_free_seq(seq);
+    while (fastq_read(fqf, seq)) ++n;
+    seq_free(seq);
 
     return n;
 }
@@ -126,8 +126,8 @@ void fastq_sample(unsigned long rng_seed,
 
     unsigned long n, n2;
 
-    fastq_t* f1 = fastq_open(file1);
-    fastq_t* f2 = file2 == NULL ? NULL : fastq_open(file2);
+    fastq_t* f1 = fastq_create(file1);
+    fastq_t* f2 = file2 == NULL ? NULL : fastq_create(file2);
 
     n = count_entries(f1);
     if (f2 != NULL) {
@@ -245,12 +245,12 @@ void fastq_sample(unsigned long rng_seed,
     unsigned long j = 0; // index into xs
 
     int ret;
-    seq_t* seq1 = fastq_alloc_seq();
-    seq_t* seq2 = fastq_alloc_seq();
+    seq_t* seq1 = seq_create();
+    seq_t* seq2 = seq_create();
 
-    while (j < k && fastq_next(f1, seq1)) {
+    while (j < k && fastq_read(f1, seq1)) {
         if (f2 != NULL){
-            ret = fastq_next(f2, seq2);
+            ret = fastq_read(f2, seq2);
             if (ret == 0) {
                 fputs("Input files have differing numbers of entries.\n", stderr);
                 exit(1);
@@ -272,10 +272,10 @@ void fastq_sample(unsigned long rng_seed,
         ++i;
     }
 
-    fastq_free_seq(seq1);
-    fastq_free_seq(seq2);
-    fastq_close(f1);
-    if (f2 != NULL) fastq_close(f2);
+    seq_free(seq1);
+    seq_free(seq2);
+    fastq_free(f1);
+    if (f2 != NULL) fastq_free(f2);
 
     fclose(fout1);
     if (fout2 != NULL) fclose(fout2);

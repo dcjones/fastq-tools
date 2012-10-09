@@ -109,13 +109,13 @@ void unpackkmer( uint32_t kmer, char* s, int k )
 
 void count_fastq_kmers(FILE* fin, uint32_t* cs)
 {
-    seq_t* seq = fastq_alloc_seq();
-    fastq_t* fqf = fastq_open(fin);
+    seq_t* seq = seq_create();
+    fastq_t* fqf = fastq_create(fin);
     int i;
     int n;
     uint32_t kmer;
 
-    while (fastq_next(fqf, seq)) {
+    while (fastq_read(fqf, seq)) {
         n = (int)seq->seq.n - k + 1;
         for (i = 0; i < n; i++) {
             if( packkmer(seq->seq.s + i, &kmer, k) ) {
@@ -124,8 +124,8 @@ void count_fastq_kmers(FILE* fin, uint32_t* cs)
         }
     }
 
-    fastq_free_seq(seq);
-    fastq_close(fqf);
+    seq_free(seq);
+    fastq_free(fqf);
 }
 
 

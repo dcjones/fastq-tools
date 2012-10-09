@@ -49,10 +49,10 @@ static size_t total_reads;
 
 void fastq_hash(FILE* fin, hash_table* T)
 {
-    fastq_t* fqf = fastq_open(fin);
-    seq_t* seq = fastq_alloc_seq();
+    fastq_t* fqf = fastq_create(fin);
+    seq_t* seq = seq_create();
 
-    while (fastq_next(fqf, seq)) {
+    while (fastq_read(fqf, seq)) {
         inc_hash_table(T, seq->seq.s, seq->seq.n);
 
         total_reads++;
@@ -61,8 +61,8 @@ void fastq_hash(FILE* fin, hash_table* T)
         }
     }
 
-    fastq_free_seq(seq);
-    fastq_close(fqf);
+    seq_free(seq);
+    fastq_free(fqf);
 }
 
 

@@ -42,12 +42,12 @@ void print_help()
 
 void tally_quals(FILE* fin, unsigned int** xs, size_t* n)
 {
-    seq_t* seq = fastq_alloc_seq();
-    fastq_t* fqf = fastq_open(fin);
+    seq_t* seq = seq_create();
+    fastq_t* fqf = fastq_create(fin);
 
     size_t i;
 
-    while (fastq_next(fqf, seq)) {
+    while (fastq_read(fqf, seq)) {
         if (seq->qual.n > *n) {
             *xs = realloc_or_die(*xs, 255 * seq->qual.n * sizeof(unsigned int));
             memset(*xs + *n, 0, 255 * (seq->qual.n - *n) * sizeof(unsigned int));
@@ -60,8 +60,8 @@ void tally_quals(FILE* fin, unsigned int** xs, size_t* n)
         }
     }
 
-    fastq_free_seq(seq);
-    fastq_close(fqf);
+    seq_free(seq);
+    fastq_free(fqf);
 }
 
 

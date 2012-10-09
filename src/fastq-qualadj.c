@@ -44,12 +44,12 @@ void print_help()
 
 void fastq_qualadj(FILE* fin, FILE* fout, int offset)
 {
-    fastq_t* fqf = fastq_open(fin);
-    seq_t* seq = fastq_alloc_seq();
+    fastq_t* fqf = fastq_create(fin);
+    seq_t* seq = seq_create();
     size_t i;
     int c;
 
-    while (fastq_next(fqf, seq)) {
+    while (fastq_read(fqf, seq)) {
         for (i = 0; i < seq->qual.n; ++i) {
             c = (int) seq->qual.s[i] + offset;
             c = c < 0 ? 0 : (c > 126 ? 126: c);
@@ -59,8 +59,8 @@ void fastq_qualadj(FILE* fin, FILE* fout, int offset)
         fastq_print(fout, seq);
     }
 
-    fastq_free_seq(seq);
-    fastq_close(fqf);
+    seq_free(seq);
+    fastq_free(fqf);
 }
 
 

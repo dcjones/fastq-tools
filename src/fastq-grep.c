@@ -59,10 +59,10 @@ void fastq_grep(FILE* fin, FILE* fout, FILE* mismatch_file, pcre* re)
     int ovector[3];
     size_t count = 0;
 
-    fastq_t* fqf = fastq_open(fin);
-    seq_t* seq = fastq_alloc_seq();
+    fastq_t* fqf = fastq_create(fin);
+    seq_t* seq = seq_create();
 
-    while (fastq_next(fqf, seq)) {
+    while (fastq_read(fqf, seq)) {
 
         rc = pcre_exec(re,          /* pattern */
                        NULL,        /* extra data */
@@ -82,8 +82,8 @@ void fastq_grep(FILE* fin, FILE* fout, FILE* mismatch_file, pcre* re)
         }
     }
 
-    fastq_free_seq(seq);
-    fastq_close(fqf);
+    seq_free(seq);
+    fastq_free(fqf);
 
     if (count_flag) fprintf(fout, "%zu\n", count);
 }

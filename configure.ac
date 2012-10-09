@@ -28,9 +28,6 @@ AC_PROG_LIBTOOL
 AC_CHECK_FUNC(fileno, ,
               AC_MSG_ERROR([The 'fileno' function is missing.]))
 
-# check zlib
-AX_CHECK_ZLIB
-
 # check pcre
 AC_CHECK_PROG(HAVE_PCRE, pcre-config, yes, no)
 if test "x$HAVE_PCRE" = "xno"
@@ -50,6 +47,7 @@ CXXFLAGS=$CFLAGS
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
+                 tests/Makefile
                  doc/Makefile
                  src/version.h])
 

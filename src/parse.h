@@ -11,10 +11,10 @@
 #ifndef FASTQ_TOOLS_PARSE_H
 #define FASTQ_TOOLS_PARSE_H
 
-#include <stdio.h>
-#include <zlib.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
-
+/* A string structure to keep-track of a reserved space. */
 typedef struct
 {
     char*  s;    /* null-terminated string */
@@ -23,7 +23,7 @@ typedef struct
 } str_t;
 
 
-
+/* A single fastq entry. */
 typedef struct
 {
     str_t id1;
@@ -33,25 +33,44 @@ typedef struct
 } seq_t;
 
 
-seq_t* fastq_alloc_seq();
-void fastq_free_seq(seq_t*);
+/* Allocate a new empty seq_t. */
+seq_t* seq_create();
 
 
-typedef struct
-{
-    gzFile file;
-    int    state;
-    char*  buf;
-    char*  c;
-} fastq_t;
+/* Free a seq allocated with seq_create. */
+void seq_free(seq_t* seq);
 
 
-fastq_t* fastq_open(FILE*);
-void fastq_close(fastq_t*);
-int  fastq_next(fastq_t*, seq_t*);
-void fastq_rewind(fastq_t*);
+/* Internal data for the fastq parser. */
+typedef struct fastq_t_ fastq_t;
 
-void fastq_print(FILE* fout, seq_t* seq);
+
+/* Create a new fastq parser object.
+ *
+ * Args:
+ *   file: A file that has been opened for reading.
+ */
+fastq_t* fastq_create(FILE* file);
+
+
+/* Free memory associated with a fastq_t object. */
+void fastq_free(fastq_t*);
+
+
+/* Read one fastq entry.
+ *
+ * Args:
+ *   f: A fastq_t parser object.
+ *   seq: A seq_t object that has been allocated with seq_create.
+ *
+ * Returns:
+ *   True if an entry was read, false if end-of-file was reached.
+ */
+bool fastq_read(fastq_t* f, seq_t* seq);
+
+
+/* Print a fastq entry. */
+void fastq_print(FILE* fout, const seq_t* seq);
 
 
 #endif

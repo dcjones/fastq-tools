@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./random_fastq | head -n 40000 | ./cat_fastq > /dev/null
+
+

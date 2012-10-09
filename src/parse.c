@@ -1,272 +1,178 @@
-/*
- * This file is part of fastq-tools.
- *
- * Copyright (c) 2011 by Daniel C. Jones <dcjones@cs.washington.edu>
- *
- */
+
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "parse.h"
 #include "common.h"
-#include <stdlib.h>
-#include <ctype.h>
 
 
-static const size_t init_str_size  = 128;
-static const size_t fastq_buf_size = 4096;
-
-static void fastq_alloc_str(str_t* s)
+static void str_init(str_t* str)
 {
-    s->s = malloc_or_die(init_str_size);
-    s->s[0] = '\0';
-    s->n = 0;
-    s->size = init_str_size;
+    str->n = 0;
+    str->size = 128;
+    str->s = malloc_or_die(str->size = 0);
+    str->s[0] = '\0';
 }
 
 
-static void fastq_expand_str(str_t* s)
+static void str_free(str_t* str)
 {
-    s->size *= 2;
-    realloc_or_die(s->s, s->size);
+    free(str->s);
 }
 
 
-seq_t* fastq_alloc_seq()
+/* Reserve space for `size` more characters. */
+static void str_reserve_extra(str_t* str, size_t size)
+{
+    if (str->n + size > str->size) {
+        if (str->n + size > 2 * str->size) {
+            str->size = str->n + size;
+        }
+        else str->size *= 2;
+        str->s = realloc_or_die(str->s, str->size * sizeof(char));
+    }
+}
+
+
+/* Copy n characters from c to the end of str. */
+static void str_append(str_t* str, char* c, size_t n)
+{
+    str_reserve_extra(str, n);
+    memcpy(str->s + str->n, c, n);
+    str->n += n;
+    str->s[str->n] = '\0';
+}
+
+
+seq_t* seq_create()
 {
     seq_t* seq = malloc_or_die(sizeof(seq_t));
-    fastq_alloc_str(&seq->id1);
-    fastq_alloc_str(&seq->seq);
-    fastq_alloc_str(&seq->id2);
-    fastq_alloc_str(&seq->qual);
-
+    str_init(&seq->id1);
+    str_init(&seq->seq);
+    str_init(&seq->id2);
+    str_init(&seq->qual);
     return seq;
 }
 
 
-void fastq_free_seq(seq_t* seq)
+void seq_free(seq_t* seq)
 {
-    free(seq->id1.s);
-    free(seq->seq.s);
-    free(seq->id2.s);
-    free(seq->qual.s);
+    str_free(&seq->id1);
+    str_free(&seq->seq);
+    str_free(&seq->id2);
+    str_free(&seq->qual);
     free(seq);
 }
 
 
-typedef enum
+static const size_t parser_buf_size = 1000000;
+
+
+struct fastq_t_
 {
-    STATE_EOF,
-    STATE_ERROR,
-    STATE_ID1,
-    STATE_SEQ,
-    STATE_ID2,
-    STATE_QUAL
-
-} fastq_state;
+    FILE* file;
+    size_t readlen;
+    char* buf;
+    char* next;
+    bool linestart;
+};
 
 
-fastq_t* fastq_open(FILE* f)
+
+fastq_t* fastq_create(FILE* file)
 {
-    fastq_t* fqf = malloc_or_die(sizeof(fastq_t));
-    or_die((int)((fqf->file = gzdopen(fileno(f), "rb")) != NULL),
-           "Can not open gzip file.");
-    
-    fqf->state = STATE_ID1;
-    fqf->buf = malloc_or_die(fastq_buf_size);
-    fqf->buf[0] = '\0';
-    fqf->c = fqf->buf;
-
-    return fqf;
+    fastq_t* f = malloc_or_die(sizeof(fastq_t));
+    f->file = file;
+    f->next = f->buf = malloc_or_die(parser_buf_size);
+    f->readlen = 0;
+    f->linestart = true;
+    return f;
 }
 
 
-void fastq_close(fastq_t* fqf)
+void fastq_free(fastq_t* f)
 {
-    gzclose(fqf->file);
-    free(fqf->buf);
-    free(fqf);
+    free(f->buf);
+    free(f);
 }
 
 
-void fastq_refill(fastq_t* f)
+typedef enum {
+    FASTQ_STATE_ID1,  /* Reading ID1. */
+    FASTQ_STATE_SEQ,  /* Reading the sequence. */
+    FASTQ_STATE_ID2,  /* Reading ID2. */
+    FASTQ_STATE_QUAL, /* Reading quality scores. */
+} fastq_parser_state_t;
+
+
+bool fastq_read(fastq_t* f, seq_t* seq)
 {
-    int errnum;
-    const char* errmsg;
-
-    int n = gzread(f->file, f->buf, fastq_buf_size - 1);
-
-    if (n <= 0) {
-        if (gzeof(f->file)) {
-            f->state = STATE_EOF;
-            n = 0;
-        }
-        else {
-            errmsg = gzerror(f->file, &errnum);
-            fprintf(stderr, "I/O error: %s\n", errmsg);
-            exit(1);
-        }
-    }
-
-    f->buf[n] = '\0';
-    f->c = f->buf;
-}
-
-
-void fastq_get_line(fastq_t* f, str_t* s)
-{
-    size_t i = 0;
-
-    if (f->state == STATE_EOF) goto fastq_get_line_done;
-
-    while (1) {
-        switch (*f->c) {
-            case '\0':
-                fastq_refill(f);
-                if (f->state == STATE_EOF) goto fastq_get_line_done;
-                break;
-
-            case '\r':
-                f->c++;
-                break;
-
-            case '\n':
-                goto fastq_get_line_done;
-
-            default:
-                while (s->size < i + 2) {
-                    fastq_expand_str(s);
-                }
-                if (s) s->s[i++] = *f->c;
-                f->c++;
-        }
-
-    }
-
-fastq_get_line_done:
-    if (s) {
-        s->s[i] = '\0';
-        s->n = i;
-    }
-}
-
-
-
-int fastq_next(fastq_t* f, seq_t* seq)
-{
-    if (f->state == STATE_EOF) return 0;
-
-    while (1) {
-
-        /* read more, if needed */
-        if (*f->c == '\0' ) {
-            fastq_refill(f);
-            if (f->state == STATE_EOF) return 0;
-            continue;
-        }
-
-        /* skip over leading whitespace */
-        else if (isspace(*f->c)) {
-            /* do nothing */
-        }
-
-        /* skip comments */
-        /*
-        else if (*f->c == ';') {
-            fastq_get_line(f, NULL);
-            if (f->state == STATE_EOF) return 0;
-        }
-        */
-
-        /* read id1 */
-        else if (f->state == STATE_ID1) {
-            if (*f->c == '@' || *f->c == '>') {
-                f->c++;
-                fastq_get_line(f, &seq->id1);
-                if (f->state == STATE_EOF) return 0;
-
-                f->state = STATE_SEQ;
+    seq->id1.n = seq->seq.n = seq->id2.n = seq->qual.n = 0;
+    fastq_parser_state_t state = FASTQ_STATE_ID1;
+    char* end = f->buf + f->readlen;
+    do {
+        while (f->next < end) {
+            /* Consume pointless special characters prefixing IDs */
+            if ((state == FASTQ_STATE_ID1 && f->linestart && f->next[0] == '@') ||
+                (state == FASTQ_STATE_ID2 && f->linestart && f->next[0] == '+')) {
+                f->linestart = false;
+                ++f->next;
+                continue;
             }
-            else {
-                fprintf(stderr,
-                        "Malformed FASTQ file: expecting an '@' or '>', saw a '%c'\n",
-                        *f->c);
-                exit(1);
+
+            char* u = memchr(f->next, '\n', end - f->next);
+            if (u == NULL) {
+                f->linestart = false;
+                u = end;
             }
-        }
+            else f->linestart = true;
 
-        /* read sequence */
-        else if (f->state == STATE_SEQ) {
-            fastq_get_line(f, &seq->seq);
-            if (f->state == STATE_EOF) return 0;
+            switch (state) {
+                case FASTQ_STATE_ID1:
+                    str_append(&seq->id1, f->next, u - f->next);
+                    if (f->linestart) state = FASTQ_STATE_SEQ;
+                    break;
 
-            f->state = STATE_ID2;
-        }
+                case FASTQ_STATE_SEQ:
+                    str_append(&seq->seq, f->next, u - f->next);
+                    if (f->linestart) state = FASTQ_STATE_ID2;
+                    break;
 
-        /* read id2 */
-        else if (f->state == STATE_ID2) {
-            if (*f->c == '+') {
-                f->c++;
-                fastq_get_line(f, &seq->id2);
-                if (f->state == STATE_EOF) return 0;
+                case FASTQ_STATE_ID2:
+                    str_append(&seq->id2, f->next, u - f->next);
+                    if (f->linestart) state = FASTQ_STATE_QUAL;
+                    break;
 
-                f->state = STATE_QUAL;
+                case FASTQ_STATE_QUAL:
+                    str_append(&seq->qual, f->next, u - f->next);
+                    if (f->linestart) {
+                        f->next = u + 1;
+                        return true;
+                    }
+                    break;
             }
-            else {
-                /* fasta style entry */
-                seq->id2.s[0]  = '\0';
-                seq->qual.s[0] = '\0';
 
-                f->state = STATE_ID1;
-                break;
-            }
+            f->next = u + 1;
         }
 
-        /* read quality string */
-        else if (f->state == STATE_QUAL) {
-            fastq_get_line(f, &seq->qual);
-            if (f->state == STATE_EOF) return 1;
+        /* Try to read more. */
+        f->readlen = fread(f->buf, 1, parser_buf_size, f->file);
+        f->next = f->buf;
+        end = f->buf + f->readlen;
+    } while (f->readlen);
 
-            f->state = STATE_ID1;
-            break;
-        }
-
-        else {
-            fputs("Inexplicable error in fastq parser.\n", stderr);
-            exit(1);
-        }
-
-        f->c++;
-    }
-
-    return 1;
+    return false;
 }
 
 
-void fastq_rewind(fastq_t* fqf)
+void fastq_print(FILE* fout, const seq_t* seq)
 {
-    gzrewind(fqf->file);
-    fqf->state = STATE_ID1;
-    fqf->buf[0] = '\0';
-    fqf->c = fqf->buf;
-}
-
-
-void fastq_print(FILE* fout, seq_t* seq)
-{
-    /* FASTQ */
-    if (seq->qual.n > 0) {
-        fprintf(fout, "@%s\n%s\n+%s\n%s\n",
-                      seq->id1.s,
-                      seq->seq.s,
-                      seq->id2.s,
-                      seq->qual.s );
-    }
-
-    /* FASTA */
-    else {
-        fprintf(fout, ">%s\n%s\n",
-                      seq->id1.s,
-                      seq->seq.s );
-    }
+    fprintf(fout, "@%s\n%s\n+%s\n%s\n",
+                  seq->id1.s,
+                  seq->seq.s,
+                  seq->id2.s,
+                  seq->qual.s );
 }
 
 
