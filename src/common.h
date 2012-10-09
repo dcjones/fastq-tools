@@ -21,5 +21,9 @@ void* malloc_or_die(size_t);
 void* realloc_or_die(void*, size_t);
 FILE* fopen_or_die(const char*, const char*);
 
+/* Open a file for reading, creating it if it doesn't exist, and complaining if
+ * it does. */
+FILE* open_without_clobber(const char* filename);
+
 #endif
 

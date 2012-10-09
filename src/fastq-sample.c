@@ -8,23 +8,16 @@
  * Sample reads with or without replacement from a FASTQ file.
  *
  */
+#include <getopt.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "common.h"
 #include "parse.h"
 #include "rng.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <getopt.h>
-#include <zlib.h>
 
-#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
-#  include <fcntl.h>
-#  include <io.h>
-#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
-#else
-#  define SET_BINARY_MODE(file)
-#endif
 
 static const char* prog_name = "fastq-sample";
 
@@ -39,7 +32,7 @@ void print_help()
 "Options:\n"
 "  -n N                    the number of reads to sample (default: 10000)\n"
 "  -p N                    the proportion of the total reads to sample\n"
-"  -o, --output=PREFIX     output file prefix\n"
+"  -o, --output=PREFIX     output file prefix\n (Default: \"sample\")"
 "  -c, --complement-output=PREFIX\n"
 "                          output reads not included in the random sample to\n"
 "                          a file (or files) with the given prefix (by default,\n"
@@ -48,7 +41,7 @@ void print_help()
 "  -s, --seed=SEED         a manual seed to the random number generator\n"
 "  -h, --help              print this message\n"
 "  -V, --version           output version information and exit\n"
-    );
+);
 }
 
 
@@ -103,25 +96,25 @@ unsigned long* index_without_replacement(rng_t* rng, unsigned long n)
 
 
 void fastq_sample(unsigned long rng_seed,
-                  const char* prefix, const char* cprefix,
-                  FILE* file1, FILE* file2, unsigned long k, double p)
+        const char* prefix, const char* cprefix,
+        FILE* file1, FILE* file2, unsigned long k, double p)
 {
-     /*
-      * The basic idea is this:
-      *
-      * 1. Count the number of lines in the file, n.
-      *
-      * 2a. If sampling with replacement, generate k random integers in [0, n-1].
-      *
-      * 2b. If sampling without replacement, generate a list of integers 0..(n-1),
-      *     shuffle with fisher-yates, then consider the first k.
-      *
-      * 3. Sort the integer list.
-      *
-      * 3. Read through the file again, when the number at the front of the integer
-      *    list matches the index of the fastq etry, print the entry, and pop the
-      *    number.
-      */
+    /*
+     * The basic idea is this:
+     *
+     * 1. Count the number of lines in the file, n.
+     *
+     * 2a. If sampling with replacement, generate k random integers in [0, n-1].
+     *
+     * 2b. If sampling without replacement, generate a list of integers 0..(n-1),
+     *     shuffle with fisher-yates, then consider the first k.
+     *
+     * 3. Sort the integer list.
+     *
+     * 3. Read through the file again, when the number at the front of the integer
+     *    list matches the index of the fastq etry, print the entry, and pop the
+     *    number.
+     */
 
 
     unsigned long n, n2;
@@ -142,7 +135,7 @@ void fastq_sample(unsigned long rng_seed,
     if (f2 != NULL) fastq_rewind(f2);
 
     if (p > 0.0) {
-        k = (unsigned long) (p * (double) n);
+        k = (unsigned long) round(p * (double) n);
         if (!replacement_flag && k > n) k = n;
     }
 
@@ -155,7 +148,6 @@ void fastq_sample(unsigned long rng_seed,
 
     qsort(xs, k, sizeof(unsigned long), cmpul);
 
-
     /* open output */
     FILE* fout1;
     FILE* fout2;
@@ -167,7 +159,7 @@ void fastq_sample(unsigned long rng_seed,
         output_name = malloc_or_die((output_len + 1) * sizeof(char));
 
         snprintf(output_name, output_len, "%s.fastq", prefix);
-        fout1 = fopen(output_name, "wb");
+        fout1 = open_without_clobber(output_name);
         if (fout1 == NULL) {
             fprintf(stderr, "Cannot open file %s for writing.\n", output_name);
             exit(1);
@@ -182,14 +174,14 @@ void fastq_sample(unsigned long rng_seed,
         output_name = malloc_or_die((output_len + 1) * sizeof(char));
 
         snprintf(output_name, output_len, "%s.1.fastq", prefix);
-        fout1 = fopen(output_name, "wb");
+        fout1 = open_without_clobber(output_name);
         if (fout1 == NULL) {
             fprintf(stderr, "Cannot open file %s for writing.\n", output_name);
             exit(1);
         }
 
         snprintf(output_name, output_len, "%s.2.fastq", prefix);
-        fout2 = fopen(output_name, "wb");
+        fout1 = open_without_clobber(output_name);
         if (fout1 == NULL) {
             fprintf(stderr, "Cannot open file %s for writing.\n", output_name);
             exit(1);
@@ -197,7 +189,6 @@ void fastq_sample(unsigned long rng_seed,
 
         free(output_name);
     }
-
 
     /* open complement output */
     FILE* cfout1 = NULL;
@@ -238,8 +229,6 @@ void fastq_sample(unsigned long rng_seed,
 
         free(output_name);
     }
-
-
 
     unsigned long i = 0; // read number
     unsigned long j = 0; // index into xs
@@ -290,21 +279,17 @@ void fastq_sample(unsigned long rng_seed,
 
 int main(int argc, char* argv[])
 {
-    SET_BINARY_MODE(stdin);
-    SET_BINARY_MODE(stdout);
-
     int opt;
     int opt_idx;
 
-    const char* prefix = NULL;
-    const char* cprefix = NULL;
+    const char* prefix = "sample";
+    const char* cprefix = NULL; 
     unsigned long rng_seed = 4357;
     unsigned long k = 10000; // number of reads to sample
     double        p = -1;    // proportion of reads to sample
 
-
     static struct option long_options[] =
-        { 
+        {
           {"with-replacement",  no_argument,       NULL, 'r'},
           {"complement-output", required_argument, NULL, 'c'},
           {"seed",              required_argument, NULL, 's'},
@@ -375,60 +360,28 @@ int main(int argc, char* argv[])
     FILE* file1 = NULL;
     FILE* file2 = NULL;
 
-    char* prefix_alloc = NULL;
-
     if (optind >= argc) {
         fputs("An input file must be given.\n", stderr);
         print_help();
-        exit(1);
+        return EXIT_FAILURE;
     }
-    else {
-        file1 = fopen(argv[optind], "rb");
-        if (file1 == NULL) {
+
+    file1 = fopen(argv[optind], "rb");
+    if (file1 == NULL) {
+        fprintf(stderr, "Cannot open '%s' for reading.\n", argv[optind]);
+        return 1;
+    }
+
+    if (++optind < argc) {
+        file2 = fopen(argv[optind], "rb");
+        if (file2 == NULL) {
             fprintf(stderr, "Cannot open '%s' for reading.\n", argv[optind]);
             return 1;
-        }
-
-        if (prefix == NULL) {
-            /* guess at a reasonable output refix by trimming the
-             * trailing file extension, if any.  */
-            char* tmp;
-
-            /* base name */
-            tmp = strrchr(argv[optind], '/');
-            if (tmp != NULL) argv[optind] = tmp + 1;
-
-            /* exclude file suffixes */
-            tmp = strchr(argv[optind], '.');
-            if (tmp == NULL) prefix = argv[optind];
-            else {
-                prefix_alloc = malloc_or_die((tmp - argv[optind] + 1) * sizeof(char));
-                memcpy(prefix_alloc, argv[optind], (tmp - argv[optind]) * sizeof(char));
-                prefix_alloc[tmp - argv[optind]] = '\0';
-                prefix = prefix_alloc;
-            }
-        }
-        ++optind;
-
-        if (optind < argc) {
-            file2 = fopen(argv[optind], "rb");
-            if (file2 == NULL) {
-                fprintf(stderr, "Cannot open '%s' for reading.\n", argv[optind]);
-                return 1;
-            }
         }
     }
 
     fastq_sample(rng_seed, prefix, cprefix, file1, file2, k, p);
 
-    free(prefix_alloc);
-    return 0;
+    return EXIT_SUCCESS;
 }
-
-
-
-
-
-
-
 

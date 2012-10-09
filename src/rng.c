@@ -41,7 +41,7 @@
    your work".
 
    Makoto Matsumoto has a web page with more information about the
-   generator, http://www.math.keio.ac.jp/~matumoto/emt.html. 
+   generator, http://www.math.keio.ac.jp/~matumoto/emt.html.
 
    The paper below has details of the algorithm.
 

@@ -8,6 +8,14 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 AM_PROG_CC_C_O
 
+m4_ifdef([AC_TYPE_UINT8_T],  [AC_TYPE_UINT8_T])
+m4_ifdef([AC_TYPE_UINT16_T], [AC_TYPE_UINT16_T])
+m4_ifdef([AC_TYPE_INT32_T],  [AC_TYPE_INT32_T])
+m4_ifdef([AC_TYPE_UINT32_T], [AC_TYPE_UINT32_T])
+m4_ifdef([AC_TYPE_UINT64_T], [AC_TYPE_UINT64_T])
+m4_ifdef([AC_TYPE_SIZE_T],   [AC_TYPE_SIZE_T])
+m4_ifdef([AC_HEADER_STDBOOL], [AC_HEADER_STDBOOL])
+
 opt_CFLAGS="--std=c99 -Wall -Wextra -pedantic -g -O3"
 dbg_CFLAGS="--std=c99 -Wall -Wextra -pedantic -g -O0"
 

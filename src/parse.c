@@ -166,6 +166,14 @@ bool fastq_read(fastq_t* f, seq_t* seq)
 }
 
 
+void fastq_rewind(fastq_t* f)
+{
+    rewind(f->file);
+    f->next = f->buf;
+    f->readlen = 0;
+}
+
+
 void fastq_print(FILE* fout, const seq_t* seq)
 {
     fprintf(fout, "@%s\n%s\n+%s\n%s\n",

@@ -69,6 +69,13 @@ void fastq_free(fastq_t*);
 bool fastq_read(fastq_t* f, seq_t* seq);
 
 
+/* Rewind the fastq file.
+ *
+ * The FILE passed to fastq_create must be seekable for this to work.
+ */
+void fastq_rewind(fastq_t* f);
+
+
 /* Print a fastq entry. */
 void fastq_print(FILE* fout, const seq_t* seq);
 
