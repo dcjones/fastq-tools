@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
     FILE* mismatch_file = NULL;
 
     static struct option long_options[] =
-        { 
+        {
           {"id",           no_argument, &id_flag,     1},
           {"invert-match", no_argument, &invert_flag, 1},
           {"mismatches",   required_argument, NULL, 'm'},

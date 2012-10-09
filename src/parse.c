@@ -11,7 +11,7 @@ static void str_init(str_t* str)
 {
     str->n = 0;
     str->size = 128;
-    str->s = malloc_or_die(str->size = 0);
+    str->s = malloc_or_die(str->size);
     str->s[0] = '\0';
 }
 
@@ -87,12 +87,12 @@ static inline uint32_t rotl32(uint32_t x, int8_t r)
 }
 
 
-uint32_t murmurhash3(const uint8_t* data, size_t len_)
+uint32_t murmurhash3(uint32_t seed, const uint8_t* data, size_t len_)
 {
     const int len = (int) len_;
     const int nblocks = len / 4;
 
-    uint32_t h1 = 0xc062fb4a;
+    uint32_t h1 = seed;
 
     uint32_t c1 = 0xcc9e2d51;
     uint32_t c2 = 0x1b873593;
@@ -144,9 +144,14 @@ uint32_t murmurhash3(const uint8_t* data, size_t len_)
 
 uint32_t seq_hash(const seq_t* seq)
 {
-    /* TODO */
-    return 0;
+    uint32_t h = 0xc062fb4a; /* random seed */
+    h = murmurhash3(h, (uint8_t*) seq->id1.s, seq->id1.n);
+    h = murmurhash3(h, (uint8_t*) seq->seq.s, seq->seq.n);
+    h = murmurhash3(h, (uint8_t*) seq->id2.s, seq->id2.n);
+    h = murmurhash3(h, (uint8_t*) seq->qual.s, seq->qual.n);
+    return h;
 }
+
 
 static const size_t parser_buf_size = 1000000;
 
