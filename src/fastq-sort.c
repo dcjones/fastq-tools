@@ -246,22 +246,22 @@ bool seq_array_push(seq_array_t* a, const seq_t* seq)
 
     memcpy(&a->data[a->data_used], seq->id1.s, seq->id1.n + 1);
     a->seqs[a->n].id1.s = &a->data[a->data_used];
-    a->seqs[a->n].id1.n = seq->id1.n + 1;
+    a->seqs[a->n].id1.n = seq->id1.n;
     a->data_used += seq->id1.n + 1;
 
     memcpy(&a->data[a->data_used], seq->seq.s, seq->seq.n + 1);
     a->seqs[a->n].seq.s = &a->data[a->data_used];
-    a->seqs[a->n].seq.n = seq->seq.n + 1;
+    a->seqs[a->n].seq.n = seq->seq.n;
     a->data_used += seq->seq.n + 1;
 
     memcpy(&a->data[a->data_used], seq->id2.s, seq->id2.n + 1);
     a->seqs[a->n].id2.s = &a->data[a->data_used];
-    a->seqs[a->n].id2.n = seq->id2.n + 1;
+    a->seqs[a->n].id2.n = seq->id2.n;
     a->data_used += seq->id2.n + 1;
 
     memcpy(&a->data[a->data_used], seq->qual.s, seq->qual.n + 1);
     a->seqs[a->n].qual.s = &a->data[a->data_used];
-    a->seqs[a->n].qual.n = seq->qual.n + 1;
+    a->seqs[a->n].qual.n = seq->qual.n;
     a->data_used += seq->qual.n + 1;
 
     ++a->n;
