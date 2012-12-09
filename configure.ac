@@ -16,8 +16,8 @@ m4_ifdef([AC_TYPE_UINT64_T], [AC_TYPE_UINT64_T])
 m4_ifdef([AC_TYPE_SIZE_T],   [AC_TYPE_SIZE_T])
 m4_ifdef([AC_HEADER_STDBOOL], [AC_HEADER_STDBOOL])
 
-opt_CFLAGS="--std=c99 -Wall -Wextra -pedantic -g -O3"
-dbg_CFLAGS="--std=c99 -Wall -Wextra -pedantic -g -O0"
+opt_CFLAGS="--std=c99 -Wall -Wextra -pedantic -g -O3 -D_C99_SOURCE"
+dbg_CFLAGS="--std=c99 -Wall -Wextra -pedantic -g -O0 -D_C99_SOURCE"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],

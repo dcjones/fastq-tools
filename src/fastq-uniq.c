@@ -10,7 +10,7 @@
 
 
 #include "common.h"
-#include "hash.h"
+#include "hash_table.h"
 #include "parse.h"
 #include <string.h>
 #include <inttypes.h>

@@ -3,8 +3,8 @@
  *
  * Copyright (c) 2012 by Daniel C. Jones <dcjones@cs.washington.edu>
  *
- * fastq-sample :
- * Sample reads with or without replacement from a FASTQ file.
+ * fastq-sort:
+ * Sort fastq files efficiently.
  *
  */
 

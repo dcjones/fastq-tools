@@ -7,7 +7,7 @@
  */
 
 
-#include "hash.h"
+#include "hash_table.h"
 #include "common.h"
 #include <stdlib.h>
 #include <stdint.h>

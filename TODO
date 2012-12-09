@@ -1,35 +1,16 @@
 
-general
-=======
+Rename hash.h/c to hash_table.h/c.
 
-Man pages!
+Seperate murmurhash into it's own file: hash.h/hash.c.
 
+Document fastq-sort.
 
-I would like to encorporate some domain-specific compression algorithm. Options
-I know of:
-  * G-SQZ (http://www.tgen.org/research/gsqueez.cfm) : not open source (i.e. not an option)
-  * fqzcomp (http://seqanswers.com/forums/archive/index.php/t-6349.html)
-  * DSRC (http://bioinformatics.oxfordjournals.org/cgi/content/short/27/6/860?rss=1) :
-    Not yet available?
-  * Invent my own.
+More comparison functions for fastq-sort.
 
+Link against quip so we can run these tools on quip/fastq/bam/sam with one
+interface.
 
-
-
-
-
-program specific
-================
-
-
-fastq-grep
-----------
-
-
-
-fastq-kmers
------------
-
+Make a website for fastq-tools.
 
 
 fastq-match
@@ -42,10 +23,4 @@ might look to Phil Green's cross_match implementation for ideas.
 
 An option to return the sequences that match past a certain threshold would be
 useful.
-
-
-
-fastq-uniq
-----------
-
 
