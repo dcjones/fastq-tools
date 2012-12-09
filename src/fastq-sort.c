@@ -406,7 +406,7 @@ void print_help()
 "  -R, --random       randomly shuffle the sequences\n"
 "      --seed[=SEED]  seed to use for random shuffle.\n"
 "  -G, --gc           sort by GC content\n"
-"  -M, --mean-qual  sort by median quality score\n" /* TODO */
+"  -M, --mean-qual    sort by median quality score\n"
 "  -h, --help         print this message\n"
 "  -V, --version      output version information and exit\n"
    );

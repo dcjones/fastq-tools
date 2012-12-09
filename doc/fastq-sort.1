@@ -1,0 +1,47 @@
+.TH FASTQ-SORT 1
+
+.SH NAME
+fastq-sort - sort entries in a fastq file
+
+.SH SYNOPSIS
+.B fastq-sort [OPTION]... [FILE]...
+
+.SH DESCRIPTION
+Sort a FASTQ file, outputing the sorted file to standard out. If no files are
+given, read from standard input.
+
+.SH OPTIONS
+.TP
+\fB\-r\fR, \fB\-\-reverse\fR
+Sort in reverse (i.e., descending) order.
+.TP
+\fB\-I\fR, \fB\-\-id\fR
+Sort alphabetically by read identifier.
+.TP
+\fB\-S\fR, \fB\-\-seq\fR
+Sort alphabetically by nucleotide sequence.
+.TP
+\fB\-R\fR, \fB\-\-random\fR
+Sort in random order. By default, a fixed seed is used so that random sort is
+deterministic. Use the '--seed' option to produce different random orderings on
+repeated runs.
+.TP
+\fB\-\-seed=[SEED]\fR
+If a decimal integer SEED is given, it is used as the seed when producing a
+random ordering. With no argument, a seed is generated using the current system
+time.
+.TP
+\fB\-G\fR, \fB\-\-gc\fR
+Sort by increasing GC-content.
+.TP
+\fB\-M\fR, \fB\-\-mean-qual\fR
+Sort by increasing mean quality score.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Output a help message and exit.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Output version information and exit.
+
+.SH AUTHOR
+Written by Daniel C. Jones <dcjones@cs.washington.edu>

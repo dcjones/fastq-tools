@@ -13,6 +13,7 @@ index
 The following programs are provided. See the individual man pages for more
 information.
 
+* *fastq-sort* : sort fastq entries by various keys
 
 * *fastq-grep* : match sequences against regular expressions
 

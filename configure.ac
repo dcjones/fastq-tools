@@ -1,5 +1,5 @@
 
-AC_INIT( [fastq-tools], [0.3], [dcjones@cs.washington.edu] )
+AC_INIT( [fastq-tools], [0.4], [dcjones@cs.washington.edu] )
 AM_INIT_AUTOMAKE( [foreign -Wall -Werror] )
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
