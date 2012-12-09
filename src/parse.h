@@ -45,6 +45,10 @@ void seq_free(seq_t* seq);
 /* Hash a fastq entry. */
 uint32_t seq_hash(const seq_t* seq);
 
+/* Set the seed to use for seq_hash. Different seeds result in different hash
+ * functions. */
+void seq_hash_set_seed(uint32_t seed);
+
 
 /* Internal data for the fastq parser. */
 typedef struct fastq_t_ fastq_t;

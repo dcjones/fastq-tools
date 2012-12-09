@@ -142,9 +142,18 @@ uint32_t murmurhash3(uint32_t seed, const uint8_t* data, size_t len_)
 }
 
 
+static uint32_t seq_hash_seed = 0xc062fb4a;
+
+
+void seq_hash_set_seed(uint32_t seed)
+{
+    seq_hash_seed = seed;
+}
+
+
 uint32_t seq_hash(const seq_t* seq)
 {
-    uint32_t h = 0xc062fb4a; /* random seed */
+    uint32_t h = seq_hash_seed;
     h = murmurhash3(h, (uint8_t*) seq->id1.s, seq->id1.n);
     h = murmurhash3(h, (uint8_t*) seq->seq.s, seq->seq.n);
     h = murmurhash3(h, (uint8_t*) seq->id2.s, seq->id2.n);

@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <getopt.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "common.h"
@@ -307,6 +308,58 @@ int seq_cmp_seq(const void* a, const void* b)
 }
 
 
+static float seq_gc(const seq_t* s)
+{
+    if (s->seq.n == 0) return 0.0;
+
+    float gc = 0;
+    size_t i;
+    for (i = 0; i < s->seq.n; ++i) {
+        if (s->seq.s[i] == 'g' || s->seq.s[i] == 'G' ||
+            s->seq.s[i] == 'c' || s->seq.s[i] == 'C') {
+            ++gc;
+        }
+    }
+
+    return gc / (float) s->seq.n;
+}
+
+
+int seq_cmp_gc(const void* a, const void* b)
+{
+    float gc_a = seq_gc((seq_t*) a);
+    float gc_b = seq_gc((seq_t*) b);
+
+    if      (gc_a < gc_b) return -1;
+    else if (gc_a > gc_b) return 1;
+    else                  return 0;
+}
+
+
+static float seq_mean_qual(const seq_t* s)
+{
+    if (s->qual.n == 0) return 0.0;
+
+    float q = 0.0;
+    size_t i;
+    for (i = 0; i < s->qual.n; ++i) {
+        q += (float) s->qual.s[i];
+    }
+    return q / (float) s->qual.n;
+}
+
+
+int seq_cmp_mean_qual(const void* a, const void* b)
+{
+    float mq_a = seq_mean_qual((seq_t*) a);
+    float mq_b = seq_mean_qual((seq_t*) b);
+
+    if      (mq_a < mq_b) return -1;
+    else if (mq_a > mq_b) return 1;
+    else                  return 0;
+}
+
+
 void seq_array_dump(seq_dumps_t* d, const seq_array_t* a)
 {
     const char* template = "/tmp/fastq_sort.XXXXXXXX";
@@ -347,11 +400,13 @@ void print_help()
 "fastq-sort [OPTION]... [FILE]...\n"
 "Concatenate and sort FASTQ files and write to standard output.\n"
 "Options:\n"
+"  -r, --reverse      sort in reverse (i.e., descending) order\n"
 "  -I, --id           sort alphabetically by read identifier\n"
 "  -S, --seq          sort alphabetically by sequence\n"
 "  -R, --random       randomly shuffle the sequences\n"
-"  -G, --gc           sort by GC content\n" /* TODO */
-"  -M, --median-qual  sort by median quality score\n" /* TODO */
+"      --seed[=SEED]  seed to use for random shuffle.\n"
+"  -G, --gc           sort by GC content\n"
+"  -M, --mean-qual  sort by median quality score\n" /* TODO */
 "  -h, --help         print this message\n"
 "  -V, --version      output version information and exit\n"
    );
@@ -382,17 +437,20 @@ int main(int argc, char* argv[])
     static struct option long_options[] =
     {
         {"buffer-size", required_argument, NULL, 'S'},
-        {"reverse",     no_argument, NULL, 'r'},
-        {"id",          no_argument, NULL, 'i'},
-        {"seq",         no_argument, NULL, 's'},
-        {"random",      no_argument, NULL, 'R'},
-        {"help",        no_argument, NULL, 'h'},
-        {"version",     no_argument, NULL, 'V'},
+        {"reverse",     no_argument,       NULL, 'r'},
+        {"id",          no_argument,       NULL, 'i'},
+        {"seq",         no_argument,       NULL, 's'},
+        {"random",      no_argument,       NULL, 'R'},
+        {"seed",        optional_argument, NULL, 0},
+        {"gc",          no_argument,       NULL, 'G'},
+        {"mean-qual",   no_argument,       NULL, 'M'},
+        {"help",        no_argument,       NULL, 'h'},
+        {"version",     no_argument,       NULL, 'V'},
         {0, 0, 0, 0}
     };
 
     while (true) {
-        opt = getopt_long(argc, argv, "S:risRhV", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "S:risRGhV", long_options, &opt_idx);
         if (opt == -1) break;
 
         switch (opt) {
@@ -416,6 +474,14 @@ int main(int argc, char* argv[])
                 user_cmp = seq_cmp_hash;
                 break;
 
+            case 'G':
+                user_cmp = seq_cmp_gc;
+                break;
+
+            case 'M':
+                user_cmp = seq_cmp_mean_qual;
+                break;
+
             case 'h':
                 print_help();
                 return 0;
@@ -423,6 +489,19 @@ int main(int argc, char* argv[])
             case 'V':
                 print_version(stdout, prog_name);
                 return 0;
+
+            case 0:
+                if (strcmp(long_options[opt_idx].name, "seed") == 0) {
+                    uint32_t seed;
+                    if (optarg) {
+                        seed = strtoul(optarg, NULL, 10);
+                    }
+                    else {
+                        seed = (uint32_t) time(NULL);
+                    }
+                    seq_hash_set_seed(seed);
+                }
+                break;
 
             case '?':
                 return 1;
