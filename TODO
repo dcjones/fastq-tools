@@ -1,12 +1,4 @@
 
-Rename hash.h/c to hash_table.h/c.
-
-Seperate murmurhash into it's own file: hash.h/hash.c.
-
-Document fastq-sort.
-
-More comparison functions for fastq-sort.
-
 Link against quip so we can run these tools on quip/fastq/bam/sam with one
 interface.
 
