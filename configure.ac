@@ -1,5 +1,5 @@
 
-AC_INIT( [fastq-tools], [0.4], [dcjones@cs.washington.edu] )
+AC_INIT( [fastq-tools], [0.6], [dcjones@cs.washington.edu] )
 AM_INIT_AUTOMAKE( [foreign -Wall -Werror] )
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
@@ -51,6 +51,7 @@ AC_CHECK_HEADER(getopt.h, ,
                 AC_MSG_ERROR([The posix getopt.h header is needed.]))
 
 
+LIBS+="-lm"
 CXXFLAGS=$CFLAGS
 
 AC_CONFIG_FILES([Makefile
