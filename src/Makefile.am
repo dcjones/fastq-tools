@@ -21,6 +21,7 @@ fastq_uniq_SOURCES = fastq-uniq.c $(fastq_common_src) $(fastq_parse_src) $(fastq
 fastq_qual_SOURCES = fastq-qual.c $(fastq_common_src) $(fastq_parse_src)
 
 fastq_sample_SOURCES = fastq-sample.c $(fastq_common_src) $(fastq_parse_src) $(fastq_rng_src)
+fastq_sample_LDADD = -lm
 
 fastq_qualadj_SOURCES = fastq-qualadj.c $(fastq_common_src) $(fastq_parse_src)
 
