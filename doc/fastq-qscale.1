@@ -1,0 +1,39 @@
+.TH FASTQ-QSCORE 1
+
+.SH NAME
+fastq-qscore - detect a files quality score encoding
+
+.SH SYNOPSIS
+.B fastq-qscore [OPTION]... [FILE]...
+
+.SH DESCRIPTION
+The program looks inspects a FASTQ file to try to determine the quality score
+encoding used.  Specifically, it will classify a file as one of:
+
+Sanger/Phred+33
+.br
+Illumina 1.8/Phred+33
+.br
+Illumina 1.5/Phred+64
+.br
+Illumina 1.3/Phred+64
+.br
+Solexa/Solexa+64
+
+The program is modeled roughly after the Unix file command, which inspects files
+to determine their type.
+
+
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Output a help message and exit.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Output version information and exit.
+
+
+.SH AUTHOR
+Written by Daniel C. Jones <dcjones@cs.washington.edu>
+
+
