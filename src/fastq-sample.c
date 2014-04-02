@@ -138,6 +138,7 @@ void fastq_sample(unsigned long rng_seed,
         k = (unsigned long) round(p * (double) n);
         if (!replacement_flag && k > n) k = n;
     }
+    else if (k > n) k = n;
 
     rng_t* rng = fastq_rng_alloc();
     fastq_rng_seed(rng, rng_seed);
@@ -283,7 +284,7 @@ int main(int argc, char* argv[])
     int opt_idx;
 
     const char* prefix = "sample";
-    const char* cprefix = NULL; 
+    const char* cprefix = NULL;
     unsigned long rng_seed = 4357;
     unsigned long k = 10000; // number of reads to sample
     double        p = -1;    // proportion of reads to sample

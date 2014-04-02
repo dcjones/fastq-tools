@@ -25,9 +25,9 @@ static void str_free(str_t* str)
 /* Reserve space for `size` more characters. */
 static void str_reserve_extra(str_t* str, size_t size)
 {
-    if (str->n + size > str->size) {
-        if (str->n + size > 2 * str->size) {
-            str->size = str->n + size;
+    if (str->n + size + 1 > str->size) {
+        if (str->n + size + 1 > 2 * str->size) {
+            str->size = str->n + size + 1;
         }
         else str->size *= 2;
         str->s = realloc_or_die(str->s, str->size * sizeof(char));
