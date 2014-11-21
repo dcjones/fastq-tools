@@ -301,6 +301,32 @@ int seq_cmp_id(const void* a, const void* b)
     return strcmp(((seq_t*) a)->id1.s, ((seq_t*) b)->id1.s);
 }
 
+// imported from samtools 0.1.18
+static inline int strnum_cmp(const char *a, const char *b)
+{
+    char *pa, *pb;
+    pa = (char*)a; pb = (char*)b;
+    while (*pa && *pb) {
+        if (isdigit(*pa) && isdigit(*pb)) {
+            long ai, bi;
+            ai = strtol(pa, &pa, 10);
+            bi = strtol(pb, &pb, 10);
+            if (ai != bi) return ai<bi? -1 : ai>bi? 1 : 0;
+        } else {
+            if (*pa != *pb) break;
+            ++pa; ++pb;
+        }
+    }
+    if (*pa == *pb)
+        return (pa-a) < (pb-b)? -1 : (pa-a) > (pb-b)? 1 : 0;
+    return *pa<*pb? -1 : *pa>*pb? 1 : 0;
+}
+
+int seq_cmp_id_num(const void* a, const void* b)
+{
+    return strnum_cmp(((seq_t*) a)->id1.s, ((seq_t*) b)->id1.s);
+}
+
 
 int seq_cmp_seq(const void* a, const void* b)
 {
@@ -362,9 +388,17 @@ int seq_cmp_mean_qual(const void* a, const void* b)
 
 void seq_array_dump(seq_dumps_t* d, const seq_array_t* a)
 {
-    const char* template = "/tmp/fastq_sort.XXXXXXXX";
-    char* fn = malloc_or_die(strlen(template) + 1);
-    memcpy(fn, template, strlen(template) + 1);
+
+    char const *tmpfolder = getenv("TMPDIR");
+    if (tmpfolder == NULL)
+        tmpfolder = "/tmp";
+
+    const char* template = "/fastq_sort.XXXXXXXX";
+    char* fn = malloc_or_die(strlen(template) + strlen(tmpfolder) + 1);
+
+    memcpy(fn, tmpfolder, strlen(tmpfolder));
+    memcpy(fn+strlen(tmpfolder), template, strlen(template) + 1);
+
     if (mktemp(fn) == NULL) {
         fprintf(stderr, "Unable to create a temporary file.\n");
         exit(EXIT_FAILURE);
@@ -402,6 +436,7 @@ void print_help()
 "Options:\n"
 "  -r, --reverse      sort in reverse (i.e., descending) order\n"
 "  -I, --id           sort alphabetically by read identifier\n"
+"  -N, --idn          sort alphanumerically by read identifier according to \"samtools sort -n\"\n"
 "  -S, --seq          sort alphabetically by sequence\n"
 "  -R, --random       randomly shuffle the sequences\n"
 "      --seed[=SEED]  seed to use for random shuffle.\n"
@@ -439,6 +474,7 @@ int main(int argc, char* argv[])
         {"buffer-size", required_argument, NULL, 'S'},
         {"reverse",     no_argument,       NULL, 'r'},
         {"id",          no_argument,       NULL, 'i'},
+        {"idn",         no_argument,       NULL, 'n'},
         {"seq",         no_argument,       NULL, 's'},
         {"random",      no_argument,       NULL, 'R'},
         {"seed",        optional_argument, NULL, 0},
@@ -450,7 +486,7 @@ int main(int argc, char* argv[])
     };
 
     while (true) {
-        opt = getopt_long(argc, argv, "S:risRGhV", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "S:rinsRGhV", long_options, &opt_idx);
         if (opt == -1) break;
 
         switch (opt) {
@@ -464,6 +500,10 @@ int main(int argc, char* argv[])
 
             case 'i':
                 user_cmp = seq_cmp_id;
+                break;
+
+            case 'n':
+                user_cmp = seq_cmp_id_num;
                 break;
 
             case 's':
