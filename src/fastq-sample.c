@@ -37,7 +37,7 @@ void print_help()
 "                          output reads not included in the random sample to\n"
 "                          a file (or files) with the given prefix (by default,\n"
 "                          they are not output).\n"
-"  -r, --with-replacement  sample with relpacement\n"
+"  -r, --with-replacement  sample with replacement\n"
 "  -s, --seed=SEED         a manual seed to the random number generator\n"
 "  -h, --help              print this message\n"
 "  -V, --version           output version information and exit\n"
