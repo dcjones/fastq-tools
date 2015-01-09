@@ -1,5 +1,7 @@
 
+AC_PREREQ([2.60])
 AC_INIT( [fastq-tools], [0.6], [dcjones@cs.washington.edu] )
+AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE( [foreign -Wall -Werror] )
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
