@@ -182,8 +182,8 @@ void fastq_sample(unsigned long rng_seed,
         }
 
         snprintf(output_name, output_len, "%s.2.fastq", prefix);
-        fout1 = open_without_clobber(output_name);
-        if (fout1 == NULL) {
+        fout2 = open_without_clobber(output_name);
+        if (fout2 == NULL) {
             fprintf(stderr, "Cannot open file %s for writing.\n", output_name);
             exit(1);
         }
@@ -223,7 +223,7 @@ void fastq_sample(unsigned long rng_seed,
 
         snprintf(output_name, output_len, "%s.2.fastq", cprefix);
         cfout2 = fopen(output_name, "wb");
-        if (cfout1 == NULL) {
+        if (cfout2 == NULL) {
             fprintf(stderr, "Cannot open file %s for writing.\n", output_name);
             exit(1);
         }
