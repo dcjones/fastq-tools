@@ -60,27 +60,27 @@ static int trim_match_flag;
 
 void fastq_print_maybe_trim(FILE* fout, seq_t* seq, int* ovector) 
 {
-	if (!trim_before_flag && !trim_after_flag) {
-		fastq_print(fout, seq);
-		return;
-	}
+    if (!trim_before_flag && !trim_after_flag) {
+        fastq_print(fout, seq);
+        return;
+    }
 
-	// trimming
-	seq_t* trimmed = seq_create();
-	int trimmed_start = 0;
-	int trimmed_end   = 0;
-	int match_start   = ovector[0];
-	int match_end     = ovector[1];
-	if (trim_before_flag) {
-		trimmed_end = seq->seq.n;
-		trimmed_start = trim_match_flag ? match_end : match_start;
-	} else if (trim_after_flag) {
-		trimmed_start = 0;
-		trimmed_end = trim_match_flag ? match_start : match_end;
-	}
-	seq_trim(seq, trimmed, trimmed_start, trimmed_end);
-	fastq_print(fout, trimmed);
-	seq_free(trimmed);
+    // trimming
+    seq_t* trimmed = seq_create();
+    int trimmed_start = 0;
+    int trimmed_end   = 0;
+    int match_start   = ovector[0];
+    int match_end     = ovector[1];
+    if (trim_before_flag) {
+        trimmed_end = seq->seq.n;
+        trimmed_start = trim_match_flag ? match_end : match_start;
+    } else if (trim_after_flag) {
+        trimmed_start = 0;
+        trimmed_end = trim_match_flag ? match_start : match_end;
+    }
+    seq_trim(seq, trimmed, trimmed_start, trimmed_end);
+    fastq_print(fout, trimmed);
+    seq_free(trimmed);
 }
 
 void fastq_grep(FILE* fin, FILE* fout, FILE* mismatch_file, pcre* re)
@@ -178,17 +178,17 @@ int main(int argc, char* argv[])
                 invert_flag = 1;
                 break;
 
-			case 'a':
-				trim_after_flag = 1;
-				break;
+            case 'a':
+                trim_after_flag = 1;
+                break;
 
-			case 'b':
-				trim_before_flag = 1;
-				break;
+            case 'b':
+                trim_before_flag = 1;
+                break;
 
-			case 't':
-				trim_match_flag = 1;
-				break;
+            case 't':
+                trim_match_flag = 1;
+                break;
 
             case 'm':
                 mismatch_file = fopen(optarg, "w");
@@ -219,24 +219,16 @@ int main(int argc, char* argv[])
 
     }
 
-	if (trim_before_flag && trim_after_flag) {
-		fprintf(stderr, "Specify -b or -a, not both.\n");
+    if (trim_before_flag && trim_after_flag) {
+        fprintf(stderr, "Specify -b or -a, not both.\n");
         return 1;
-	}
+    }
 
-	int trim = trim_before_flag || trim_after_flag;
-	if (trim && id_flag) {
-		fprintf(stderr, "Makes no sense to trim IDs.\n");
-		return 1;
-	}
-
-	if (trim_before_flag) {
-		fprintf(stderr, "Trimming before.\n");
-	}
-
-	if (trim_after_flag) {
-		fprintf(stderr, "Trimming after.\n");
-	}
+    int trim = trim_before_flag || trim_after_flag;
+    if (trim && id_flag) {
+        fprintf(stderr, "Makes no sense to trim IDs.\n");
+        return 1;
+    }
 
     if (optind >= argc) {
         fprintf(stderr, "A pattern must be specified.\n");
