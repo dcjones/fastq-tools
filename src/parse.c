@@ -44,6 +44,11 @@ static void str_append(str_t* str, char* c, size_t n)
     str->s[str->n] = '\0';
 }
 
+static void str_copy(str_t* source, str_t* dest)
+{
+    str_append(dest, source->s, source->n);
+}
+
 
 seq_t* seq_create()
 {
@@ -65,6 +70,15 @@ void seq_free(seq_t* seq)
     free(seq);
 }
 
+
+void seq_trim(seq_t* seq, seq_t* dest, int start, int end)
+{
+    str_copy(&seq->id1, &dest->id1);
+    str_copy(&seq->id2, &dest->id2);
+
+    str_append(&dest->seq, seq->seq.s + start, end - start);
+    str_append(&dest->qual, seq->qual.s + start, end - start);
+}
 
 /* This is MurmurHash3. The original C++ code was placed in the public domain
  * by its author, Austin Appleby. */

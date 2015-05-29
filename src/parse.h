@@ -37,10 +37,11 @@ typedef struct
 /* Allocate a new empty seq_t. */
 seq_t* seq_create();
 
-
 /* Free a seq allocated with seq_create. */
 void seq_free(seq_t* seq);
 
+/* Trim seq and save in new empty seq_t dest */
+void seq_trim(seq_t* seq, seq_t* dest, int start, int end);
 
 /* Hash a fastq entry. */
 uint32_t seq_hash(const seq_t* seq);
