@@ -328,6 +328,15 @@ int seq_cmp_id_num(const void* a, const void* b)
 }
 
 
+int seq_cmp_len(const void* a, const void* b)
+{
+    size_t len_a = strlen(((seq_t*) a)->seq.s);
+    size_t len_b = strlen(((seq_t*) b)->seq.s);
+    if      (len_a < len_b) return -1;
+    else if (len_a > len_b) return  1;
+    else              return  0;
+}
+
 int seq_cmp_seq(const void* a, const void* b)
 {
     return strcmp(((seq_t*) a)->seq.s, ((seq_t*) b)->seq.s);
@@ -437,6 +446,7 @@ void print_help()
 "  -r, --reverse      sort in reverse (i.e., descending) order\n"
 "  -I, --id           sort alphabetically by read identifier\n"
 "  -N, --idn          sort alphanumerically by read identifier according to \"samtools sort -n\"\n"
+"  -L, --len          sort by sequence length\n"
 "  -S, --seq          sort alphabetically by sequence\n"
 "  -R, --random       randomly shuffle the sequences\n"
 "      --seed[=SEED]  seed to use for random shuffle.\n"
@@ -475,6 +485,7 @@ int main(int argc, char* argv[])
         {"reverse",     no_argument,       NULL, 'r'},
         {"id",          no_argument,       NULL, 'i'},
         {"idn",         no_argument,       NULL, 'n'},
+        {"len",         no_argument,       NULL, 'L'},
         {"seq",         no_argument,       NULL, 's'},
         {"random",      no_argument,       NULL, 'R'},
         {"seed",        optional_argument, NULL, 0},
@@ -486,7 +497,7 @@ int main(int argc, char* argv[])
     };
 
     while (true) {
-        opt = getopt_long(argc, argv, "S:rinsRGhV", long_options, &opt_idx);
+        opt = getopt_long(argc, argv, "S:rinLsRGhV", long_options, &opt_idx);
         if (opt == -1) break;
 
         switch (opt) {
@@ -504,6 +515,10 @@ int main(int argc, char* argv[])
 
             case 'n':
                 user_cmp = seq_cmp_id_num;
+                break;
+
+            case 'L':
+                user_cmp = seq_cmp_len;
                 break;
 
             case 's':
