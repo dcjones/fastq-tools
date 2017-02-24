@@ -41,6 +41,17 @@ script must be run first to generate the `configure` script.
 The only external dependencies are PCRE (http://www.pcre.org/) and zlib
 (http://zlib.net/).
 
+    $ sudo apt-get install libpcre3-dev
+    $ sudo apt-get install zlibc
+    $ git clone https://github.com/dcjones/fastq-tools.git
+    $ cd fastq-tools
+    $ ./autogen.sh
+    $ ./configure
+    $ make install
+    $ cp -puv src/fastq-{grep,kmers,match,uniq,qual,sample,qualadj,sort,qscale} /usr/local/bin/
+    $ cd ..
+    $ rm fastq-tools -rf
+
 
 contribute
 ----------
