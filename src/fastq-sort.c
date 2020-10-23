@@ -14,6 +14,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "common.h"
 #include "parse.h"
@@ -399,12 +400,13 @@ void seq_array_dump(seq_dumps_t* d, const seq_array_t* a)
     memcpy(fn, tmpfolder, strlen(tmpfolder));
     memcpy(fn+strlen(tmpfolder), template, strlen(template) + 1);
 
-    if (mktemp(fn) == NULL) {
+    int fd = mkstemp(fn);
+    if (fd == -1) {
         fprintf(stderr, "Unable to create a temporary file.\n");
         exit(EXIT_FAILURE);
     }
 
-    FILE* f = fopen(fn, "wb");
+    FILE* f = fdopen(fd, "w");
     if (f == NULL) {
         fprintf(stderr, "Unable to open temporary file %s for writing.\n", fn);
         exit(EXIT_FAILURE);

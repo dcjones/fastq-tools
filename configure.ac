@@ -1,7 +1,6 @@
 
 AC_PREREQ([2.60])
-AC_INIT( [fastq-tools], [0.8], [dcjones@cs.washington.edu] )
-AC_CONFIG_AUX_DIR([.])
+AC_INIT( [fastq-tools], [0.8.1], [dcjones@cs.washington.edu] )
 AM_INIT_AUTOMAKE( [foreign -Wall -Werror] )
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
@@ -18,8 +17,8 @@ m4_ifdef([AC_TYPE_UINT64_T], [AC_TYPE_UINT64_T])
 m4_ifdef([AC_TYPE_SIZE_T],   [AC_TYPE_SIZE_T])
 m4_ifdef([AC_HEADER_STDBOOL], [AC_HEADER_STDBOOL])
 
-opt_CFLAGS="--std=c99 -Wall -Wextra -pedantic -g -O3 -D_C99_SOURCE"
-dbg_CFLAGS="--std=c99 -Wall -Wextra -pedantic -g -O0 -D_C99_SOURCE"
+opt_CFLAGS="--std=gnu99 -Wall -Wextra -g -O3"
+dbg_CFLAGS="--std=gnu99 -Wall -Wextra -g -O0"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
@@ -35,6 +34,8 @@ AC_DEFINE(_POSIX_SOURCE) # needed for fileno
 
 AC_PROG_LIBTOOL
 
+AC_CHECK_FUNC(mkstemp, ,
+              AC_MSG_ERROR([The 'mkstemp' function is missing.]))
 AC_CHECK_FUNC(fileno, ,
               AC_MSG_ERROR([The 'fileno' function is missing.]))
 
