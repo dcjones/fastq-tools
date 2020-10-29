@@ -412,6 +412,7 @@ void seq_array_dump(seq_dumps_t* d, const seq_array_t* a, const char* tmpdir)
         int ret = fastq_print(f, &a->seqs[i]);
         if (ret <= 0) {
             fprintf(stderr, "Out of space, unable to write to temporary file: %s\n", fn);
+            fprintf(stderr, "Consider using the --temporary-directory=DIR option to write to a different directory.\n";
 
             // make sure to delete temporary files
             fclose(f);
