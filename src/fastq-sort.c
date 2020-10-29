@@ -387,18 +387,13 @@ int seq_cmp_mean_qual(const void* a, const void* b)
 }
 
 
-void seq_array_dump(seq_dumps_t* d, const seq_array_t* a)
+void seq_array_dump(seq_dumps_t* d, const seq_array_t* a, const char* tmpdir)
 {
-
-    char const *tmpfolder = getenv("TMPDIR");
-    if (tmpfolder == NULL)
-        tmpfolder = "/tmp";
-
     const char* template = "/fastq_sort.XXXXXXXX";
-    char* fn = malloc_or_die(strlen(template) + strlen(tmpfolder) + 1);
+    char* fn = malloc_or_die(strlen(template) + strlen(tmpdir) + 1);
 
-    memcpy(fn, tmpfolder, strlen(tmpfolder));
-    memcpy(fn+strlen(tmpfolder), template, strlen(template) + 1);
+    memcpy(fn, tmpdir, strlen(tmpdir));
+    memcpy(fn+strlen(tmpdir), template, strlen(template) + 1);
 
     int fd = mkstemp(fn);
     if (fd == -1) {
@@ -416,7 +411,7 @@ void seq_array_dump(seq_dumps_t* d, const seq_array_t* a)
     for (i = 0; i < a->n; ++i) {
         int ret = fastq_print(f, &a->seqs[i]);
         if (ret <= 0) {
-            fprintf("Out of space, unable to write to temporary file: %s\n", fn);
+            fprintf(stderr, "Out of space, unable to write to temporary file: %s\n", fn);
 
             // make sure to delete temporary files
             fclose(f);
@@ -454,7 +449,8 @@ void print_help()
 "      --seed[=SEED]  seed to use for random shuffle.\n"
 "  -G, --gc           sort by GC content\n"
 "  -M, --mean-qual    sort by median quality score\n"
-"  -S, --buffer-size=SIZE amount of memory to use for sorting"
+"  -S, --buffer-size=SIZE         amount of memory to use for sorting\n"
+"  -T, --temporary-directory=DIR  write temporary files here, instead of $TMPDIR, or /tmp\n"
 "  -h, --help         print this message\n"
 "  -V, --version      output version information and exit\n"
    );
@@ -482,9 +478,14 @@ int main(int argc, char* argv[])
     bool reverse_sort = false;
     user_cmp = seq_cmp_id;
 
+    char const *tmpdir = getenv("TMPDIR");
+    if (tmpdir == NULL)
+        tmpdir = "/tmp";
+
     static struct option long_options[] =
     {
         {"buffer-size", required_argument, NULL, 'S'},
+        {"temporary-directory", required_argument, NULL, 'T'},
         {"reverse",     no_argument,       NULL, 'r'},
         {"id",          no_argument,       NULL, 'i'},
         {"idn",         no_argument,       NULL, 'n'},
@@ -503,6 +504,10 @@ int main(int argc, char* argv[])
         if (opt == -1) break;
 
         switch (opt) {
+            case 'T':
+                tmpdir = strdup(optarg);
+                break;
+
             case 'S':
                 buffer_size = parse_size(optarg);
                 break;
@@ -576,7 +581,7 @@ int main(int argc, char* argv[])
         while (fastq_read(f, seq)) {
             if (!seq_array_push(a, seq)) {
                 seq_array_sort(a, cmp);
-                seq_array_dump(d, a);
+                seq_array_dump(d, a, tmpdir);
                 seq_array_clear(a);
                 if (!seq_array_push(a, seq)) {
                     fprintf(stderr, "The buffer size is to small.\n");
@@ -599,7 +604,7 @@ int main(int argc, char* argv[])
             while (fastq_read(f, seq)) {
                 if (!seq_array_push(a, seq)) {
                     seq_array_sort(a, cmp);
-                    seq_array_dump(d, a);
+                    seq_array_dump(d, a, tmpdir);
                     seq_array_clear(a);
                     if (!seq_array_push(a, seq)) {
                         fprintf(stderr, "The buffer size is to small.\n");
@@ -624,7 +629,7 @@ int main(int argc, char* argv[])
             }
         }
         else {
-            seq_array_dump(d, a);
+            seq_array_dump(d, a, tmpdir);
             merge_sort(d, cmp);
         }
     }
