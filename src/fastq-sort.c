@@ -478,7 +478,7 @@ size_t parse_size(const char* str)
 int main(int argc, char* argv[])
 {
     int opt, opt_idx;
-    size_t buffer_size = 100000000;
+    size_t buffer_size = 1000000000;
     bool reverse_sort = false;
     user_cmp = seq_cmp_id;
 
