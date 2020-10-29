@@ -414,7 +414,17 @@ void seq_array_dump(seq_dumps_t* d, const seq_array_t* a)
 
     size_t i;
     for (i = 0; i < a->n; ++i) {
-        fastq_print(f, &a->seqs[i]);
+        int ret = fastq_print(f, &a->seqs[i]);
+        if (ret <= 0) {
+            fprintf("Out of space, unable to write to temporary file: %s\n", fn);
+
+            // make sure to delete temporary files
+            fclose(f);
+            unlink(fn);
+            seq_dumps_free(d);
+
+            exit(EXIT_FAILURE);
+        }
     }
 
     if (d->n == d->size) {

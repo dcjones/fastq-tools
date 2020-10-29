@@ -87,7 +87,7 @@ void fastq_rewind(fastq_t* f);
 
 
 /* Print a fastq entry. */
-void fastq_print(FILE* fout, const seq_t* seq);
+int fastq_print(FILE* fout, const seq_t* seq);
 
 
 #endif

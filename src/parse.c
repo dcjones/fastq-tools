@@ -284,9 +284,9 @@ void fastq_rewind(fastq_t* f)
 }
 
 
-void fastq_print(FILE* fout, const seq_t* seq)
+int fastq_print(FILE* fout, const seq_t* seq)
 {
-    fprintf(fout, "@%s\n%s\n+%s\n%s\n",
+    return fprintf(fout, "@%s\n%s\n+%s\n%s\n",
                   seq->id1.s,
                   seq->seq.s,
                   seq->id2.s,
