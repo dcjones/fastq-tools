@@ -29,6 +29,8 @@ information.
 
 * *fastq-qualadj* : adjust quality scores by a fixed offset
 
+* *fastq-tile-map* : compute per-tile quality metrics
+
 
 install
 -------
