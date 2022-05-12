@@ -1,7 +1,7 @@
 
-bin_PROGRAMS = fastq-grep fastq-tile-map fastq-kmers fastq-match fastq-uniq \
-               fastq-qual fastq-sample fastq-qualadj fastq-sort \
-               fastq-qscale
+bin_PROGRAMS = fastq-grep fastq-tile-map fastq-tile-filter fastq-kmers \
+               fastq-match fastq-uniq fastq-qual fastq-sample fastq-qualadj \
+               fastq-sort fastq-qscale
 
 fastq_common_src=common.h common.c
 fastq_parse_src=parse.h parse.c
@@ -16,6 +16,9 @@ fastq_kmers_SOURCES = fastq-kmers.c $(fastq_common_src) $(fastq_parse_src)
 
 fastq_tile_map_SOURCES = fastq-tile-map.c $(fastq_common_src) $(fastq_parse_src)
 fastq_tile_map_LDADD = $(PCRE_LIBS)
+
+fastq_tile_filter_SOURCES = fastq-tile-filter.c $(fastq_common_src) $(fastq_parse_src)
+fastq_tile_filter_LDADD = $(PCRE_LIBS)
 
 fastq_match_SOURCES = fastq-match.c $(fastq_common_src) $(fastq_parse_src) $(fastq_sw_src)
 
