@@ -72,11 +72,11 @@ void print_help() {
     fprintf(stdout,
 "fastq-tile-map [FILE]...\n"
 "Calculate several quality metrics for all image tiles referenced in any FILE or in standard input.\n"
-
+"\n"
 "Options:\n"
 "  -H, --header        Output table header\n"
 "  -h, --help          Print this message\n"
-"  -v, --version       Print version information and exit\n"
+"  -V, --version       Print version information and exit\n"
     );
 }
 
@@ -145,12 +145,12 @@ int main(int argc, char* argv[]) {
 
   static struct option long_options[] = {
     {"help",         no_argument, NULL, 'h'},
-    {"version",      no_argument, NULL, 'v'},
+    {"version",      no_argument, NULL, 'V'},
     {0, 0, 0, 0}
   };
 
   while (1) {
-    int opt = getopt_long(argc, argv, "Hhv", long_options, &opt_idx);
+    int opt = getopt_long(argc, argv, "HhV", long_options, &opt_idx);
 
     if (opt == -1) break;
 
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
         print_header = 1;
         break;
 
-      case 'v':
+      case 'V':
         print_version(stdout, prog_name);
         return 0;
 
@@ -212,10 +212,6 @@ int main(int argc, char* argv[]) {
               tile + 1,
               n,
               qsum[lane][surface][swath][tile] / n - '!',
-              // 100 * nperf[lane][surface][swath][tile] / n,
-              // 100 * nempty[lane][surface][swath][tile] / n,
-              // 100 * q20[lane][surface][swath][tile] / n,
-              // 100 * q30[lane][surface][swath][tile] / n
               nperf[lane][surface][swath][tile],
               nempty[lane][surface][swath][tile],
               q20[lane][surface][swath][tile],
@@ -229,12 +225,12 @@ int main(int argc, char* argv[]) {
               surface + 1,
               swath + 1,
               tile + 1,
-              0,
+              (unsigned)0,
               0.0,
-              0,
-              0,
-              0,
-              0
+              (unsigned)0,
+              (unsigned)0,
+              (unsigned)0,
+              (unsigned)0
             );
           }
         }
