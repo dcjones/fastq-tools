@@ -334,6 +334,30 @@ int seq_cmp_seq(const void* a, const void* b)
     return strcmp(((seq_t*) a)->seq.s, ((seq_t*) b)->seq.s);
 }
 
+int seq_cmp_rlo(const void* a, const void* b)
+{
+	//read right-to-left
+    size_t offset_a=((seq_t*) a)->seq.n - 1;
+	size_t offset_b=((seq_t*) b)->seq.n - 1;
+	
+	while( *((((seq_t*) a)->seq.s)+offset_a)==*((((seq_t*) b)->seq.s)+offset_b) && offset_a>=0 && offset_b>=0){
+		offset_a--;
+		offset_b--;
+	}
+	
+	if(offset_a>=0 && offset_b>=0){
+		if(*((((seq_t*) a)->seq.s)+offset_a)<*((((seq_t*) b)->seq.s)+offset_b))
+			return -1;
+		else
+			return 1;
+	}
+	else if(offset_a<0 && offset_b>=0)
+		return -1;
+	else if(offset_a>=0 && offset_b<0)
+		return 1;
+	else
+		return 0;
+}
 
 static float seq_gc(const seq_t* s)
 {
@@ -446,6 +470,7 @@ void print_help()
 "  -i, --id           sort alphabetically by read identifier\n"
 "  -n, --idn          sort alphanumerically by read identifier according to \"samtools sort -n\"\n"
 "  -s, --seq          sort alphabetically by sequence\n"
+"  -c, --rlo          sort co-lexicographically (i.e., reverse lexicographical order) by sequence\n"
 "  -R, --random       randomly shuffle the sequences\n"
 "      --seed[=SEED]  seed to use for random shuffle.\n"
 "  -G, --gc           sort by GC content\n"
@@ -491,6 +516,7 @@ int main(int argc, char* argv[])
         {"id",          no_argument,       NULL, 'i'},
         {"idn",         no_argument,       NULL, 'n'},
         {"seq",         no_argument,       NULL, 's'},
+        {"rlo",     no_argument,       NULL, 'c'},
         {"random",      no_argument,       NULL, 'R'},
         {"seed",        optional_argument, NULL, 0},
         {"gc",          no_argument,       NULL, 'G'},
@@ -527,6 +553,10 @@ int main(int argc, char* argv[])
 
             case 's':
                 user_cmp = seq_cmp_seq;
+                break;
+            
+            case 'c':
+                user_cmp = seq_cmp_rlo;
                 break;
 
             case 'R':
